@@ -1,0 +1,1447 @@
+---
+alwaysApply: true
+---
+
+# X-FE Coding Best Practices
+
+This document outlines the coding standards and best practices that all files in the X-FE codebase should follow. These practices ensure consistency, maintainability, and high code quality across the entire project.
+
+---
+
+## Table of Contents
+
+1. [Component Structure](#1-component-structure)
+2. [TypeScript Best Practices](#2-typescript-best-practices)
+3. [Component Patterns](#3-component-patterns)
+4. [Import/Export Conventions](#4-importexport-conventions)
+5. [Blade Design System Usage](#5-blade-design-system-usage)
+6. [State Management](#6-state-management)
+7. [Custom Hooks](#7-custom-hooks)
+8. [Testing Requirements](#8-testing-requirements)
+9. [Analytics Integration](#9-analytics-integration)
+10. [Error Handling](#10-error-handling)
+11. [Performance Optimization](#11-performance-optimization)
+12. [Code Organization](#12-code-organization)
+    - [12.1 Keep Components Small](#121-keep-components-small)
+    - [12.2 Extract Complex Logic](#122-extract-complex-logic)
+    - [12.3 Consistent Naming](#123-consistent-naming)
+    - [12.4 File Organization Best Practices](#124-file-organization-best-practices)
+    - [12.5 Prop Destructuring and Early Returns](#125-prop-destructuring-and-early-returns)
+13. [Git and Code Review](#13-git-and-code-review)
+
+---
+
+## 1. Component Structure
+
+### 1.1 Directory Organization
+
+Every component folder should follow this standardized structure:
+
+```
+ComponentName/
+├── index.tsx           # Main component file
+├── types.ts            # Type definitions and interfaces
+├── constants.ts        # Constants, enums, and configuration
+├── utils.ts            # Utility functions specific to this component
+├── hooks.ts            # Custom hooks (if needed)
+├── styles.ts           # Styled components (if using styled-components)
+├── __tests__/          # Test files
+│   ├── ComponentName.test.tsx
+│   ├── apiHandlers.ts  # MSW handlers for API mocking
+│   └── mockdata.ts     # Mock data for tests
+└── components/         # Sub-components (if needed)
+    └── SubComponent.tsx
+```
+
+### 1.2 Component File Template
+
+**index.tsx:**
+
+```typescript
+import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'modules/react-router';
+import { Box, Button, Text } from '@razorpay/blade/components';
+import { useAppSelector } from 'modules/storeHooks';
+import { ComponentNameProps } from './types';
+import { COMPONENT_CONSTANTS } from './constants';
+import { helperFunction } from './utils';
+
+export const ComponentName = ({ prop1, prop2 }: ComponentNameProps) => {
+  // 1. Hooks (state, router, redux)
+  const navigate = useNavigate();
+  const stateValue = useAppSelector((state) => state.app.someValue);
+  const [localState, setLocalState] = useState<string>('');
+
+  // 2. Derived values and memoized calculations
+  const derivedValue = useMemo(() => {
+    return helperFunction(localState);
+  }, [localState]);
+
+  // 3. Event handlers and callbacks
+  const handleClick = useCallback(() => {
+    // Handle click
+  }, []);
+
+  // 4. Side effects
+  useEffect(() => {
+    // Side effect logic
+  }, []);
+
+  // 5. Render logic
+  return (
+    <Box>
+      <Text>{derivedValue}</Text>
+      <Button onClick={handleClick}>Click Me</Button>
+    </Box>
+  );
+};
+
+// Named export (default exports are acceptable for page-level components)
+export default ComponentName;
+```
+
+**types.ts:**
+
+```typescript
+export interface ComponentNameProps {
+  prop1: string;
+  prop2?: number;
+  onAction?: (data: ActionData) => void;
+}
+
+export interface ActionData {
+  id: string;
+  value: string;
+}
+
+export type ComponentVariant = 'primary' | 'secondary' | 'tertiary';
+```
+
+**constants.ts:**
+
+```typescript
+export const COMPONENT_CONSTANTS = {
+  MAX_ITEMS: 10,
+  DEFAULT_TIMEOUT: 3000,
+} as const;
+
+export const STATUS_TYPES = {
+  PENDING: 'pending',
+  APPROVED: 'approved',
+  REJECTED: 'rejected',
+} as const;
+
+export type StatusType = (typeof STATUS_TYPES)[keyof typeof STATUS_TYPES];
+```
+
+**utils.ts:**
+
+```typescript
+/**
+ * Formats a value according to component requirements
+ * @param value - The value to format
+ * @returns Formatted string
+ */
+export const formatValue = (value: string): string => {
+  return value.trim().toLowerCase();
+};
+
+export const calculateTotal = (items: Item[]): number => {
+  return items.reduce((sum, item) => sum + item.amount, 0);
+};
+```
+
+---
+
+## 2. TypeScript Best Practices
+
+### 2.1 Avoid React.FC
+
+**❌ Don't:**
+
+```typescript
+const MyComponent: React.FC<Props> = ({ prop1 }) => {
+  return <div>{prop1}</div>;
+};
+```
+
+**✅ Do:**
+
+```typescript
+const MyComponent = ({ prop1 }: Props) => {
+  return <div>{prop1}</div>;
+};
+
+// Or with return type annotation
+const MyComponent = ({ prop1 }: Props): JSX.Element => {
+  return <div>{prop1}</div>;
+};
+```
+
+**Reason:** `React.FC` has implicit children prop and other issues. Explicit typing is clearer and more flexible.
+
+### 2.2 Avoid `any` and `unknown`
+
+**❌ Don't:**
+
+```typescript
+const processData = (data: any) => {
+  return data.value; // No type safety
+};
+
+const response: any = await api.fetch();
+```
+
+**✅ Do:**
+
+```typescript
+interface ApiResponse {
+  value: string;
+  status: number;
+}
+
+const processData = (data: ApiResponse) => {
+  return data.value; // Type safe
+};
+
+const response: ApiResponse = await api.fetch();
+
+// If type is truly unknown, use proper type guards
+const processUnknown = (data: unknown) => {
+  if (typeof data === 'object' && data !== null && 'value' in data) {
+    return (data as ApiResponse).value;
+  }
+  throw new Error('Invalid data structure');
+};
+```
+
+### 2.3 Avoid Inline Type Assertions
+
+**❌ Don't:**
+
+```typescript
+const MyComponent = () => {
+  const data = useAppSelector((state) => state.data) as MyData;
+  const items = response.items as Array<{ id: string; name: string }>;
+
+  return (
+    <div>
+      {items.map((item) => (
+        <span key={item.id}>{item.name}</span>
+      ))}
+    </div>
+  );
+};
+```
+
+**✅ Do:**
+
+```typescript
+// Define types in types.ts
+interface MyData {
+  id: string;
+  value: number;
+}
+
+interface Item {
+  id: string;
+  name: string;
+}
+
+// Use proper typing in component
+const MyComponent = () => {
+  const data = useAppSelector((state): MyData => state.data);
+  const items: Item[] = response.items;
+
+  return (
+    <div>
+      {items.map((item) => (
+        <span key={item.id}>{item.name}</span>
+      ))}
+    </div>
+  );
+};
+```
+
+### 2.4 Use Type Inference When Appropriate
+
+**✅ Do:**
+
+```typescript
+// Type inference works well here
+const [count, setCount] = useState(0); // inferred as number
+const [isOpen, setIsOpen] = useState(false); // inferred as boolean
+
+// Explicit typing when needed
+const [user, setUser] = useState<User | null>(null);
+const [items, setItems] = useState<Item[]>([]);
+```
+
+### 2.5 Proper Return Type Annotations
+
+**✅ Do:**
+
+```typescript
+// For functions that might have complex return types
+const calculateMetrics = (data: Data[]): Metrics => {
+  return {
+    total: data.length,
+    average: data.reduce((sum, d) => sum + d.value, 0) / data.length,
+  };
+};
+
+// For async functions
+const fetchData = async (id: string): Promise<ApiResponse> => {
+  const response = await api.fetch(id);
+  return response.data;
+};
+```
+
+---
+
+## 3. Component Patterns
+
+### 3.1 Avoid Class Components
+
+**❌ Don't:**
+
+```typescript
+class MyComponent extends React.Component<Props, State> {
+  constructor(props: Props) {
+    super(props);
+    this.state = { count: 0 };
+  }
+
+  render() {
+    return <div>{this.state.count}</div>;
+  }
+}
+```
+
+**✅ Do:**
+
+```typescript
+const MyComponent = ({ initialCount = 0 }: Props) => {
+  const [count, setCount] = useState(initialCount);
+
+  return <div>{count}</div>;
+};
+```
+
+### 3.2 Avoid Compose Pattern (HOCs)
+
+**❌ Don't:**
+
+```typescript
+const MyComponent = ({ data, querySearch, updateQuerySearch }: Props) => {
+  return <div>...</div>;
+};
+
+export default compose(withData, withQuerySearch, withAnalytics)(MyComponent);
+```
+
+**✅ Do:**
+
+```typescript
+const MyComponent = (props: Props) => {
+  // Use hooks instead
+  const data = useData();
+  const { querySearch, updateQuerySearch } = useQuerySearch();
+  const { trackEvent } = useAnalytics();
+
+  return <div>...</div>;
+};
+
+export default MyComponent;
+```
+
+**Exception:** `withQuerySearch` is still used in legacy code but should be migrated to `useQuerySearch` hook for new components.
+
+### 3.3 Functional Component Best Practices
+
+**✅ Do:**
+
+```typescript
+// 1. Keep components focused and single-responsibility
+// 2. Extract complex logic into custom hooks
+// 3. Use composition over inheritance
+// 4. Keep render logic clean and readable
+
+const UserProfile = ({ userId }: Props) => {
+  const { user, isLoading } = useUserData(userId);
+  const { updateUser } = useUserActions();
+
+  if (isLoading) {
+    return <Spinner />;
+  }
+
+  return (
+    <Box>
+      <UserHeader user={user} />
+      <UserDetails user={user} onUpdate={updateUser} />
+    </Box>
+  );
+};
+```
+
+---
+
+## 4. Import/Export Conventions
+
+### 4.1 Use Named Exports (Preferred)
+
+**✅ Do:**
+
+```typescript
+// Component file
+export const MyComponent = () => {
+  return <div>My Component</div>;
+};
+
+export const MyUtilityComponent = () => {
+  return <div>Utility</div>;
+};
+
+// Importing
+import { MyComponent, MyUtilityComponent } from './MyComponent';
+```
+
+### 4.2 Default Exports (Acceptable for Page Components)
+
+```typescript
+// Page-level components can use default export
+const PayoutsPage = () => {
+  return <div>Payouts</div>;
+};
+
+export default PayoutsPage;
+```
+
+### 4.3 Import Organization
+
+**✅ Do:**
+
+```typescript
+// 1. External libraries (React, third-party)
+import { useState, useEffect, useCallback } from 'react';
+import { useNavigate, useLocation } from 'modules/react-router';
+import moment from 'moment-timezone';
+
+// 2. Blade components
+import { Box, Button, Text, Card } from '@razorpay/blade/components';
+
+// 3. Internal modules (api, modules, utilities)
+import api from 'api/api';
+import { useAppSelector } from 'modules/storeHooks';
+import { formatDate } from 'modules/util';
+
+// 4. Views and UI components
+import { showErrorNotification } from 'views/xtra/ui/Notifications/NotificationsReducer';
+
+// 5. Local imports (types, constants, utils)
+import { MyComponentProps } from './types';
+import { CONSTANTS } from './constants';
+import { helperFunction } from './utils';
+```
+
+### 4.4 Avoid Barrel Exports Antipattern
+
+**❌ Don't (in most cases):**
+
+```typescript
+// utils/index.ts
+export * from './util1';
+export * from './util2';
+export * from './util3';
+```
+
+**✅ Do:**
+
+```typescript
+// Import specific utilities
+import { specificUtil } from 'modules/util/specificUtil';
+import { anotherUtil } from 'modules/util/anotherUtil';
+```
+
+---
+
+## 5. Blade Design System Usage
+
+### 5.1 Always Use Blade Components
+
+**❌ Don't:**
+
+```typescript
+import Button from 'ui/Button'; // Old custom button
+import { Link as RouterLink } from 'react-router-dom';
+```
+
+**✅ Do:**
+
+```typescript
+import { Button, Link } from '@razorpay/blade/components';
+import { Link } from 'modules/blade/components'; // Wrapped Blade Link with router
+```
+
+### 5.2 Use Blade Spacing and Layout
+
+**❌ Don't:**
+
+```typescript
+<Box style={{ margin: '10px', padding: '20px' }}>
+  <Button style={{ marginTop: '15px' }}>Click</Button>
+</Box>
+```
+
+**✅ Do:**
+
+```typescript
+<Box padding="spacing.5" margin="spacing.3">
+  <Button marginTop="spacing.4">Click</Button>
+</Box>
+
+// Responsive spacing
+<Box
+  padding={{ base: 'spacing.3', m: 'spacing.6' }}
+  display="flex"
+  flexDirection={{ base: 'column', m: 'row' }}
+>
+  <Button>Click</Button>
+</Box>
+```
+
+### 5.3 Check Blade Documentation Before Using
+
+```typescript
+// Always fetch component docs from Blade MCP before using
+// Example: Before using ActionList, fetch its documentation
+// to understand proper props and usage patterns
+
+// Use semantic components
+// PasswordInput instead of generic TextInput for passwords
+import { PasswordInput } from '@razorpay/blade/components';
+```
+
+### 5.4 Minimal Component Configuration
+
+**✅ Do:**
+
+```typescript
+// Use minimal props - don't add size, color unless explicitly needed
+<Button>Submit</Button>
+
+// Add props only when required
+<Button size="large" variant="primary">
+  Primary Action
+</Button>
+```
+
+---
+
+## 6. State Management
+
+### 6.1 Use Typed Redux Selectors
+
+**✅ Do:**
+
+```typescript
+// modules/storeHooks.ts
+import { useSelector, TypedUseSelectorHook } from 'react-redux';
+import { RootState } from 'types/rootState';
+
+export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
+
+// In component
+const user = useAppSelector((state) => state.app.user);
+const payouts = useAppSelector((state) => state.payouts.items);
+```
+
+### 6.2 Selector Best Practices
+
+**✅ Do:**
+
+```typescript
+// Create reusable selectors
+const selector = ({ app, payouts }: RootState) => ({
+  user: app.user,
+  items: payouts.items,
+  isLoading: payouts.isLoading,
+});
+
+export const usePayoutsData = () => {
+  return useAppSelector(selector, shallowEqual);
+};
+```
+
+### 6.3 Local State vs Redux State
+
+**✅ Guidelines:**
+
+```typescript
+// Use local state for:
+// - UI state (modals, dropdowns, form inputs)
+// - Component-specific temporary data
+const [isOpen, setIsOpen] = useState(false);
+const [searchTerm, setSearchTerm] = useState('');
+
+// Use Redux state for:
+// - Global application state
+// - Data shared across multiple components
+// - Data that needs to persist across routes
+const user = useAppSelector((state) => state.app.user);
+```
+
+---
+
+## 7. Custom Hooks
+
+### 7.1 Hook File Organization
+
+```typescript
+// hooks.ts or useFeatureName.ts
+import { useState, useCallback } from 'react';
+import { useAppSelector } from 'modules/storeHooks';
+
+/**
+ * Custom hook for managing feature state
+ * @param initialValue - Initial value for the feature
+ * @returns Feature state and actions
+ */
+export const useFeatureName = (initialValue: string) => {
+  const [value, setValue] = useState(initialValue);
+  const globalData = useAppSelector((state) => state.feature.data);
+
+  const updateValue = useCallback((newValue: string) => {
+    setValue(newValue);
+  }, []);
+
+  return {
+    value,
+    globalData,
+    updateValue,
+  };
+};
+```
+
+### 7.2 Hook Naming Convention
+
+```typescript
+// ✅ Good hook names
+useUserData();
+usePayoutActions();
+useFormValidation();
+useQuerySearch();
+
+// ❌ Bad hook names
+getUserData(); // Not a hook
+fetchUser(); // Should be useFetchUser or useUserData
+hookForPayouts(); // Unclear naming
+```
+
+### 7.3 Hook Best Practices
+
+**✅ Do:**
+
+```typescript
+// 1. Return objects for multiple values
+const useAuth = () => {
+  return {
+    user,
+    isAuthenticated,
+    login,
+    logout,
+  };
+};
+
+// 2. Provide clear return types
+interface UseAuthReturn {
+  user: User | null;
+  isAuthenticated: boolean;
+  login: (credentials: Credentials) => Promise<void>;
+  logout: () => void;
+}
+
+export const useAuth = (): UseAuthReturn => {
+  // Implementation
+};
+
+// 3. Keep hooks focused and single-purpose
+// Bad: useUserDataAndPayoutsAndSettings()
+// Good: useUserData(), usePayouts(), useSettings()
+```
+
+---
+
+## 8. Testing Requirements
+
+### 8.1 Test File Structure
+
+```typescript
+// ComponentName.test.tsx
+import { screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { renderApp } from 'modules/renderApp';
+import setupTestServer from 'modules/testUtils/setupTestServer';
+import ComponentName from '../index';
+import { apiHandlers } from './apiHandlers';
+import { mockData } from './mockdata';
+
+describe('ComponentName', () => {
+  beforeEach(() => {
+    setupTestServer(apiHandlers);
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  test('should render component correctly', async () => {
+    renderApp(<ComponentName />, {
+      initialRoute: '/path',
+      initialReduxState: mockData,
+    });
+
+    expect(await screen.findByText('Expected Text')).toBeInTheDocument();
+  });
+
+  test('should handle user interaction', async () => {
+    renderApp(<ComponentName />);
+
+    const button = screen.getByRole('button', { name: /submit/i });
+    userEvent.click(button);
+
+    await waitFor(() => {
+      expect(screen.getByText('Success')).toBeInTheDocument();
+    });
+  });
+});
+```
+
+### 8.2 Coverage Requirements
+
+```typescript
+// ✅ Maintain unit test coverage
+// Run: yarn test -- --coverage
+// Check: coverage/lcov-report/index.html
+
+// Key requirements:
+// 1. Test files required for new components
+// 2. Coverage for critical business logic
+// 3. API handlers properly mocked
+// 4. User interactions tested
+```
+
+### 8.3 Test Best Practices
+
+**✅ Do:**
+
+```typescript
+// 1. Test user behavior, not implementation
+test('should display error message when form submission fails', async () => {
+  // Arrange
+  setupTestServer(errorHandlers);
+  renderApp(<Form />);
+
+  // Act
+  userEvent.type(screen.getByLabelText(/name/i), 'John');
+  userEvent.click(screen.getByRole('button', { name: /submit/i }));
+
+  // Assert
+  expect(await screen.findByText(/error occurred/i)).toBeInTheDocument();
+});
+
+// 2. Use accessible queries
+// Preferred: getByRole, getByLabelText, getByText
+// Avoid: getByTestId (use sparingly)
+
+// 3. Wait for async operations
+await waitFor(() => {
+  expect(screen.getByText('Loaded')).toBeInTheDocument();
+});
+
+// 4. Test edge cases
+test('should handle empty state', () => {
+  renderApp(<List items={[]} />);
+  expect(screen.getByText(/no items/i)).toBeInTheDocument();
+});
+```
+
+### 8.4 Build Error Checks
+
+**✅ Always check before committing:**
+
+```bash
+# 1. Run tests
+yarn test
+
+# 2. Check TypeScript errors
+yarn tsc --noEmit
+
+# 3. Run linter
+yarn lint
+
+# 4. Build check
+yarn build
+```
+
+---
+
+## 9. Analytics Integration
+
+### 9.1 RazorAnalytics Setup
+
+```typescript
+// Use data-analytics attributes for tracking
+import { Button, Link } from '@razorpay/blade/components';
+
+// For buttons
+<Button data-analytics-name="submit-payment">
+  Submit Payment
+</Button>
+
+// For links with button variant
+<Link
+  variant="button"
+  href="/settings"
+  data-analytics-name="open-settings"
+>
+  Settings
+</Link>
+
+// For forms
+<form name="create-payout-form">
+  <TextInput name="amount" label="Amount" />
+  <TextInput name="contact" label="Contact" />
+  <Button type="submit" data-analytics-name="submit-payout">
+    Submit
+  </Button>
+</form>
+```
+
+### 9.2 Analytics Naming Convention
+
+**✅ Do:**
+
+```typescript
+// Use kebab-case for analytics names
+data-analytics-name="create-new-payout"
+data-analytics-name="download-statement"
+data-analytics-name="approve-workflow"
+
+// Base on component context
+// File: CreatePayoutModal/index.tsx
+<Button data-analytics-name="create-payout-submit">Submit</Button>
+<Button data-analytics-name="create-payout-cancel">Cancel</Button>
+```
+
+### 9.3 Container Components Analytics
+
+```typescript
+// Add data-analytics-name to all container components
+<Accordion data-analytics-name="payout-details-accordion">
+  <AccordionItem title="Payment Info">...</AccordionItem>
+</Accordion>
+
+<Modal data-analytics-name="confirm-payment-modal">
+  <ModalHeader>Confirm Payment</ModalHeader>
+</Modal>
+
+<Drawer data-analytics-name="filters-drawer">
+  <DrawerHeader>Filters</DrawerHeader>
+</Drawer>
+```
+
+### 9.4 Analytics Testing Requirements
+
+**CRITICAL:** When adding analytics, tests MUST verify analytics calls:
+
+```typescript
+import { spyOnRazorAnalytics } from 'modules/razorAnalytics/__tests__/razorAnalyticsTestUtils';
+
+describe('Component with Analytics', () => {
+  let analyticsMock: ReturnType<typeof spyOnRazorAnalytics>;
+
+  beforeEach(() => {
+    analyticsMock = spyOnRazorAnalytics();
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  test('should track button click event', async () => {
+    renderApp(<MyComponent />);
+
+    userEvent.click(screen.getByRole('button', { name: /submit/i }));
+
+    expect(analyticsMock.trackEvent).toHaveBeenCalledWith({
+      eventName: 'button_clicked',
+      attributes: expect.objectContaining({
+        buttonName: 'submit',
+      }),
+    });
+  });
+});
+```
+
+---
+
+## 10. Error Handling
+
+### 10.1 API Error Handling
+
+**✅ Do:**
+
+```typescript
+import { showErrorNotification } from 'views/xtra/ui/Notifications/NotificationsReducer';
+import { captureExceptionInSentry, ErrorRank } from 'x/modules/sentry';
+import getErrorMsg from 'modules/util/getErrorMsg';
+
+const fetchData = async (id: string) => {
+  try {
+    const response = await api.fetch(id);
+
+    if (!response.success) {
+      throw new Error(response.error?.description || 'Failed to fetch data');
+    }
+
+    return response.data;
+  } catch (error: unknown) {
+    // Log to Sentry
+    captureExceptionInSentry(error, {
+      tags: { feature: 'payouts', action: 'fetch' },
+      rank: ErrorRank.P1,
+    });
+
+    // Show user-friendly error
+    dispatch(showErrorNotification(getErrorMsg(error) || 'Failed to load data'));
+
+    throw error; // Re-throw if caller needs to handle
+  }
+};
+```
+
+### 10.2 Error Boundaries
+
+```typescript
+// Use error boundaries for component-level error handling
+<ErrorBoundary fallback={<ErrorFallback />}>
+  <ComplexComponent />
+</ErrorBoundary>
+```
+
+### 10.3 Form Validation Errors
+
+**✅ Do:**
+
+```typescript
+interface FormErrors {
+  amount?: string;
+  contact?: string;
+}
+
+const [errors, setErrors] = useState<FormErrors>({});
+
+const validateForm = (): boolean => {
+  const newErrors: FormErrors = {};
+
+  if (!amount) {
+    newErrors.amount = 'Amount is required';
+  }
+
+  if (!contact) {
+    newErrors.contact = 'Contact is required';
+  }
+
+  setErrors(newErrors);
+  return Object.keys(newErrors).length === 0;
+};
+```
+
+---
+
+## 11. Performance Optimization
+
+### 11.1 Memoization
+
+**✅ Do:**
+
+```typescript
+// Memoize expensive calculations
+const expensiveValue = useMemo(() => {
+  return complexCalculation(data);
+}, [data]);
+
+// Memoize callbacks to prevent re-renders
+const handleClick = useCallback(() => {
+  doSomething(value);
+}, [value]);
+
+// Memoize components
+const MemoizedComponent = memo(({ data }: Props) => {
+  return <div>{data.value}</div>;
+});
+```
+
+### 11.2 Lazy Loading
+
+**✅ Do:**
+
+```typescript
+import lazyLoadWithRetry from 'modules/lazyLoadWithRetry';
+import Loader from 'views/xtra/Loader/Loader';
+
+const PayoutsPage = lazyLoadWithRetry(
+  () => import('./PayoutsPage' /* webpackChunkName: "payouts-page" */),
+);
+
+const App = () => (
+  <Suspense fallback={<Loader />}>
+    <PayoutsPage />
+  </Suspense>
+);
+```
+
+### 11.3 Avoid Unnecessary Re-renders
+
+**❌ Don't:**
+
+```typescript
+// Creating new objects/arrays in render
+const MyComponent = () => {
+  return <ChildComponent config={{ value: 1 }} />; // New object every render
+};
+
+// Inline function definitions for callbacks
+<Button onClick={() => handleClick(id)}>Click</Button>;
+```
+
+**✅ Do:**
+
+```typescript
+// Memoize objects
+const config = useMemo(() => ({ value: 1 }), []);
+<ChildComponent config={config} />;
+
+// Use useCallback for handlers
+const handleButtonClick = useCallback(() => {
+  handleClick(id);
+}, [id]);
+<Button onClick={handleButtonClick}>Click</Button>;
+```
+
+---
+
+## 12. Code Organization
+
+### 12.1 Keep Components Small
+
+**✅ Guidelines:**
+
+```typescript
+// If a component exceeds ~300 lines, consider:
+// 1. Extracting sub-components
+// 2. Moving logic to custom hooks
+// 3. Creating utility functions
+
+// Bad: 800-line component with everything
+const HugeComponent = () => {
+  // Too much logic here
+};
+
+// Good: Split into focused components
+const ParentComponent = () => {
+  const { data, actions } = useComponentLogic();
+
+  return (
+    <Box>
+      <ComponentHeader data={data} />
+      <ComponentBody data={data} actions={actions} />
+      <ComponentFooter actions={actions} />
+    </Box>
+  );
+};
+```
+
+### 12.2 Extract Complex Logic
+
+**✅ Do:**
+
+```typescript
+// Move complex logic to utils.ts
+// utils.ts
+export const calculatePayoutMetrics = (payouts: Payout[]): Metrics => {
+  const total = payouts.reduce((sum, p) => sum + p.amount, 0);
+  const pending = payouts.filter((p) => p.status === 'pending').length;
+  const processed = payouts.filter((p) => p.status === 'processed').length;
+
+  return { total, pending, processed };
+};
+
+// Component stays clean
+const PayoutsComponent = () => {
+  const payouts = useAppSelector((state) => state.payouts.items);
+  const metrics = useMemo(() => calculatePayoutMetrics(payouts), [payouts]);
+
+  return <MetricsDisplay metrics={metrics} />;
+};
+```
+
+### 12.3 Consistent Naming
+
+**✅ Do:**
+
+```typescript
+// Files: PascalCase for components, camelCase for utilities
+ComponentName.tsx;
+types.ts;
+constants.ts;
+utils.ts;
+hooks.ts;
+
+// Variables: camelCase
+const userName = 'John';
+const isActive = true;
+
+// Constants: UPPER_SNAKE_CASE
+const MAX_RETRIES = 3;
+const API_BASE_URL = 'https://api.example.com';
+
+// Types/Interfaces: PascalCase
+interface UserData {}
+type PayoutStatus = 'pending' | 'approved';
+
+// Functions: camelCase with verb prefix
+const getUserData = () => {};
+const calculateTotal = () => {};
+const handleSubmit = () => {};
+```
+
+### 12.4 File Organization Best Practices
+
+Organize component code into separate files for better maintainability and readability.
+
+**❌ Don't - Everything in one file:**
+
+```typescript
+// ❌ BAD - index.tsx with everything mixed together
+import React, { useState } from 'react';
+
+const SALARY_TAX_RATE = 0.3;
+const BONUS_MULTIPLIER = 1.5;
+
+type Employee = {
+  id: string;
+  name: string;
+  salary: number;
+};
+
+const calculateTax = (salary: number) => salary * SALARY_TAX_RATE;
+const calculateBonus = (salary: number) => salary * BONUS_MULTIPLIER;
+
+export const EmployeeDetails = ({ employeeId }: { employeeId: string }) => {
+  const [employee, setEmployee] = useState<Employee | null>(null);
+
+  const tax = employee ? calculateTax(employee.salary) : 0;
+  const bonus = employee ? calculateBonus(employee.salary) : 0;
+
+  return <div>{/* 200 lines of JSX */}</div>;
+};
+```
+
+**✅ Do - Organized structure:**
+
+```typescript
+// types.ts
+export type Employee = {
+  id: string;
+  name: string;
+  salary: number;
+};
+
+export type EmployeeDetailsProps = {
+  employeeId: string;
+};
+
+// constants.ts
+export const SALARY_TAX_RATE = 0.3;
+export const BONUS_MULTIPLIER = 1.5;
+
+export const EMPLOYMENT_TYPES = {
+  FULL_TIME: 'full_time',
+  PART_TIME: 'part_time',
+  CONTRACT: 'contract',
+} as const;
+
+export type EmploymentType = (typeof EMPLOYMENT_TYPES)[keyof typeof EMPLOYMENT_TYPES];
+
+// utils.ts
+import { SALARY_TAX_RATE, BONUS_MULTIPLIER } from './constants';
+
+/**
+ * Calculate tax on salary
+ * @param salary - Employee salary
+ * @returns Tax amount
+ */
+export const calculateTax = (salary: number): number => {
+  return salary * SALARY_TAX_RATE;
+};
+
+/**
+ * Calculate bonus on salary
+ * @param salary - Employee salary
+ * @returns Bonus amount
+ */
+export const calculateBonus = (salary: number): number => {
+  return salary * BONUS_MULTIPLIER;
+};
+
+/**
+ * Format amount as Indian currency
+ * @param amount - Amount to format
+ * @returns Formatted currency string
+ */
+export const formatCurrency = (amount: number): string => {
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+  }).format(amount);
+};
+
+// index.tsx
+import { useState } from 'react';
+import { Box, Text, Heading } from '@razorpay/blade/components';
+import type { Employee, EmployeeDetailsProps } from './types';
+import { calculateTax, calculateBonus, formatCurrency } from './utils';
+
+export const EmployeeDetails = ({ employeeId }: EmployeeDetailsProps) => {
+  const [employee, setEmployee] = useState<Employee | null>(null);
+
+  const tax = employee ? calculateTax(employee.salary) : 0;
+  const bonus = employee ? calculateBonus(employee.salary) : 0;
+
+  return (
+    <Box padding="spacing.5">
+      <Heading>{employee?.name}</Heading>
+      <Text>Tax: {formatCurrency(tax)}</Text>
+      <Text>Bonus: {formatCurrency(bonus)}</Text>
+    </Box>
+  );
+};
+```
+
+### 12.5 Prop Destructuring and Early Returns
+
+**✅ Prop Destructuring:**
+
+```typescript
+// ❌ Don't access props repeatedly
+const MyComponent = (props: MyComponentProps) => {
+  return (
+    <Box>
+      <Text>{props.title}</Text>
+      <Text>{props.description}</Text>
+      <Button onClick={props.onSubmit}>Submit</Button>
+    </Box>
+  );
+};
+
+// ✅ Do destructure props in parameters
+const MyComponent = ({ title, description, onSubmit }: MyComponentProps) => {
+  return (
+    <Box>
+      <Text>{title}</Text>
+      <Text>{description}</Text>
+      <Button onClick={onSubmit}>Submit</Button>
+    </Box>
+  );
+};
+```
+
+**✅ Early Returns:**
+
+```typescript
+// ❌ Don't nest conditions deeply
+const UserProfile = ({ userId }: Props) => {
+  const user = useAppSelector((state) => state.users[userId]);
+
+  return (
+    <Box>
+      {user ? (
+        <Box>
+          {user.isActive ? (
+            <Box>
+              <Text>{user.name}</Text>
+              {/* 50 more lines */}
+            </Box>
+          ) : (
+            <Text>User is inactive</Text>
+          )}
+        </Box>
+      ) : (
+        <Text>User not found</Text>
+      )}
+    </Box>
+  );
+};
+
+// ✅ Do use early returns
+const UserProfile = ({ userId }: Props) => {
+  const user = useAppSelector((state) => state.users[userId]);
+
+  // Early return for missing data
+  if (!user) {
+    return <Text>User not found</Text>;
+  }
+
+  // Early return for inactive state
+  if (!user.isActive) {
+    return <Text>User is inactive</Text>;
+  }
+
+  // Main render logic without nesting
+  return (
+    <Box>
+      <Text>{user.name}</Text>
+      {/* Clean, readable main content */}
+    </Box>
+  );
+};
+```
+
+---
+
+## 13. Git and Code Review
+
+### 13.1 Commit Messages
+
+**✅ Do:**
+
+```bash
+# Format: <type>: <description>
+
+feat: add bulk payout creation feature
+fix: resolve date picker timezone issue
+refactor: migrate ContactForm to Blade components
+test: add tests for PayoutDetailsView
+docs: update API integration guide
+chore: upgrade dependencies
+
+# Bad commits
+"fixed bug"
+"updates"
+"WIP"
+```
+
+### 13.2 Pull Request Guidelines
+
+**✅ Checklist:**
+
+```markdown
+## PR Checklist
+
+- [ ] Tests added/updated (maintain coverage)
+- [ ] TypeScript: No new type errors
+- [ ] ESLint: No new linting errors
+- [ ] Build: Passes without errors
+- [ ] Blade components: Used instead of custom UI
+- [ ] Analytics: data-analytics-name added where needed
+- [ ] Error handling: Proper error messages and Sentry logging
+- [ ] Documentation: Updated if needed
+- [ ] References: Asana task, Figma, PRD links added
+
+## Testing
+
+- [ ] Ran `yarn test -- --coverage`
+- [ ] Checked coverage/lcov-report/index.html
+- [ ] Manual testing completed
+```
+
+### 13.3 Code Review Focus Areas
+
+**Review for:**
+
+1. ✅ Proper TypeScript usage (no `any`, no inline assertions)
+2. ✅ Blade component usage (no custom UI)
+3. ✅ Test coverage (especially for analytics)
+4. ✅ Error handling and Sentry logging
+5. ✅ Performance considerations (memoization, lazy loading)
+6. ✅ Accessibility (proper ARIA labels, semantic HTML)
+7. ✅ Component structure (proper file organization)
+8. ✅ Naming conventions followed
+9. ✅ No class components or compose pattern
+10. ✅ Analytics properly integrated and tested
+
+---
+
+## Quick Reference Checklist
+
+### Before Committing New Code:
+
+- [ ] Component follows directory structure (index.tsx, types.ts, constants.ts, utils.ts, **tests**/)
+- [ ] Code organized into separate files (types, constants, utils separate from component logic)
+- [ ] No `React.FC` usage
+- [ ] No `any` or `unknown` types (unless unavoidable with proper guards)
+- [ ] No inline type assertions
+- [ ] No class components
+- [ ] No HOC compose pattern (use hooks instead)
+- [ ] Named exports used (or default for pages)
+- [ ] Props destructured in function parameters
+- [ ] Early returns used to reduce nesting
+- [ ] Blade components used exclusively
+- [ ] Blade spacing tokens used (spacing.X)
+- [ ] Analytics attributes added (`data-analytics-name`)
+- [ ] Tests added with proper coverage
+- [ ] Analytics calls tested (if applicable)
+- [ ] TypeScript compiles without errors (`yarn tsc --noEmit`)
+- [ ] No ESLint errors (`yarn lint`)
+- [ ] Build passes (`yarn build`)
+- [ ] Error handling with Sentry integration
+- [ ] Proper import organization
+
+### Common Code Smells to Avoid:
+
+❌ Using `React.FC`
+❌ Using `any` or `unknown` without type guards
+❌ Inline type assertions
+❌ Class components
+❌ HOC compose pattern
+❌ Custom UI components instead of Blade
+❌ Hardcoded styling instead of Blade tokens
+❌ Missing analytics attributes
+❌ Untested analytics calls
+❌ Missing error handling
+❌ Inconsistent file structure
+❌ Everything in one file (types, constants, utils mixed with component)
+❌ Not destructuring props in parameters
+❌ Deep nesting instead of early returns
+❌ Default exports everywhere (prefer named)
+❌ Massive components (>300 lines)
+❌ Complex logic in JSX
+❌ Inline functions in render
+
+---
+
+## Resources
+
+- [Blade Documentation](https://blade.razorpay.com/) - Access via Blade MCP
+- [Project README](./README.md)
+- [Contributing Guide](./CONTRIBUTING.md)
+- [Troubleshooting Guide](./TROUBLESHOOTING.md)
+- [TypeScript Handbook](https://www.typescriptlang.org/docs/)
+- [React Testing Library](https://testing-library.com/react)
+- [Workspace Rules](.cursor/rules/) - Blade and Analytics guidelines
+
+---
+
+## Questions or Suggestions?
+
+If you have questions about these best practices or suggestions for improvements, please:
+
+1. Discuss with the team lead
+2. Create a discussion in team channels (#x-fe-team)
+3. Update this document with team consensus
+
+---
+
+**Remember:** Consistency is key. Following these best practices ensures maintainability, scalability, and code quality across the entire X-FE codebase.

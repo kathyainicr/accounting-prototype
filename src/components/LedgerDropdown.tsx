@@ -1,0 +1,276 @@
+/**
+ * LedgerDropdown — reusable ledger selector with 4 variants:
+ *
+ * 'empty'       → plain Blade SelectInput (no AI involvement)
+ * 'ai'          → AI-pre-filled: spinning RayIcon + gradient text, custom menu
+ * 'manual'      → user overrode AI: plain custom trigger, custom menu with RayIcon on AI suggestion
+ * 'ai-approved' → user confirmed AI: static RayIcon trigger, custom menu with RayIcon on AI suggestion
+ *
+ * When aiSuggestedValue is set, 'manual' and 'ai-approved' use a custom menu
+ * instead of Blade's ActionList so we can show a RayIcon next to the AI-suggested
+ * option — Blade's ActionListItem doesn't accept arbitrary JSX as leading.
+ */
+
+import { useState, useEffect, useRef } from 'react'
+import styled, { keyframes } from 'styled-components'
+import {
+  Dropdown,
+  DropdownOverlay,
+  SelectInput,
+  ActionList,
+  ActionListItem,
+  ActionListItemIcon,
+  RayIcon,
+  ChevronDownIcon,
+} from '@razorpay/blade/components'
+
+export type LedgerDropdownVariant = 'empty' | 'ai' | 'manual' | 'ai-approved'
+
+type Props = {
+  variant: LedgerDropdownVariant
+  /** Selected value (or AI suggestion for 'ai' variant) */
+  value?: string
+  options: string[]
+  onChange: (value: string) => void
+  /** Which option was AI-suggested — shows a RayIcon next to it in the menu */
+  aiSuggestedValue?: string
+  isDrawer?: boolean
+  label?: string
+  necessityIndicator?: 'required' | 'optional'
+}
+
+const spin = keyframes`
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+`
+
+const gradientFlow = keyframes`
+  from { background-position: 0% center; }
+  to   { background-position: 200% center; }
+`
+
+const AiTrigger = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 36px;
+  padding: 0 12px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: border-color 150ms ease, background 150ms ease;
+
+  &:hover {
+    border-color: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #48d08c;
+    outline-offset: 2px;
+  }
+`
+
+const SpinningRay = styled.span`
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  animation: ${spin} 2s linear infinite;
+`
+
+const GradientText = styled.span`
+  flex: 1;
+  text-align: left;
+  font-size: 14px;
+  font-weight: 400;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  background: linear-gradient(90deg, #E6E9EF 25%, #8D9BB0 40%, #E6E9EF 75%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: ${gradientFlow} 3s linear infinite;
+`
+
+const PlainText = styled.span`
+  flex: 1;
+  text-align: left;
+  font-size: 14px;
+  font-weight: 400;
+  color: #FCFCFD;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`
+
+// position: fixed so it escapes TableCell's overflow: hidden
+const MenuContainer = styled.div`
+  position: fixed;
+  z-index: 9999;
+  background: #1C2431;
+  border: 1px solid rgba(206, 213, 222, 0.18);
+  border-radius: 4px;
+  box-shadow: 0 8px 24px 0 rgba(25, 40, 57, 0.12);
+  padding: 8px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+`
+
+const MenuItem = styled.button<{ $isSelected?: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: calc(100% - 16px);
+  margin: 0 8px;
+  padding: 8px;
+  border-radius: 4px;
+  text-align: left;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 20px;
+  color: ${p => p.$isSelected ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.72)'};
+  background: ${p => p.$isSelected ? 'rgba(46, 91, 255, 0.24)' : 'transparent'};
+  border: none;
+  cursor: pointer;
+  transition: background 100ms ease;
+
+  &:hover {
+    background: ${p => p.$isSelected ? 'rgba(46, 91, 255, 0.32)' : 'rgba(255, 255, 255, 0.08)'};
+    color: rgba(255, 255, 255, 0.9);
+  }
+`
+
+const ESTIMATED_MENU_HEIGHT = 300
+
+export const LedgerDropdown = ({ variant, value = '', options, onChange, aiSuggestedValue, isDrawer, label, necessityIndicator }: Props) => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [menuPos, setMenuPos] = useState<{ top: number; left: number; width: number } | null>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<HTMLButtonElement>(null)
+
+  useEffect(() => {
+    if (!isMenuOpen) return
+    const close = () => setIsMenuOpen(false)
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) close()
+    }
+    document.addEventListener('mousedown', handleOutsideClick)
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick)
+    }
+  }, [isMenuOpen])
+
+  const handleTriggerClick = () => {
+    if (!isMenuOpen && triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect()
+      const spaceBelow = window.innerHeight - rect.bottom - 8
+      const openAbove = spaceBelow < ESTIMATED_MENU_HEIGHT
+      setMenuPos({
+        top: openAbove ? rect.top - ESTIMATED_MENU_HEIGHT - 4 : rect.bottom + 4,
+        left: rect.left,
+        width: rect.width,
+      })
+    }
+    setIsMenuOpen((o) => !o)
+  }
+
+  const customMenu = isMenuOpen && menuPos && (
+    <MenuContainer style={{ top: menuPos.top, left: menuPos.left, width: menuPos.width }}>
+      {options.map((opt) => (
+        <MenuItem
+          key={opt}
+          type="button"
+          $isSelected={opt === value}
+          onClick={() => { onChange(opt); setIsMenuOpen(false) }}
+        >
+          {opt === aiSuggestedValue && (
+            <RayIcon size="medium" color="surface.icon.gray.muted" />
+          )}
+          <span>{opt}</span>
+        </MenuItem>
+      ))}
+    </MenuContainer>
+  )
+
+  if (isDrawer) {
+    return (
+      <Dropdown selectionType="single">
+        <SelectInput
+          label={label ?? ''}
+          placeholder="Select ledger"
+          value={value || undefined}
+          icon={variant === 'ai' || variant === 'ai-approved' ? RayIcon : undefined}
+          necessityIndicator={necessityIndicator}
+          onChange={({ values }) => onChange(values[0] ?? '')}
+        />
+        <DropdownOverlay>
+          <ActionList>
+            {options.map((opt) => (
+              <ActionListItem
+                key={opt}
+                title={opt}
+                value={opt}
+                leading={opt === aiSuggestedValue ? <ActionListItemIcon icon={RayIcon} /> : undefined}
+              />
+            ))}
+          </ActionList>
+        </DropdownOverlay>
+      </Dropdown>
+    )
+  }
+
+  if (variant === 'ai') {
+    return (
+      <div ref={containerRef} style={{ width: '100%' }}>
+        <AiTrigger ref={triggerRef} type="button" onClick={handleTriggerClick}>
+          <SpinningRay>
+            <RayIcon size="medium" color="feedback.icon.positive.intense" />
+          </SpinningRay>
+          <GradientText>{value}</GradientText>
+          <ChevronDownIcon size="medium" color="surface.icon.gray.muted" />
+        </AiTrigger>
+        {customMenu}
+      </div>
+    )
+  }
+
+  if ((variant === 'manual' || variant === 'ai-approved') && aiSuggestedValue) {
+    return (
+      <div ref={containerRef} style={{ width: '100%' }}>
+        <AiTrigger ref={triggerRef} type="button" onClick={handleTriggerClick}>
+          {variant === 'ai-approved' && (
+            <SpinningRay>
+              <RayIcon size="medium" color="feedback.icon.positive.intense" />
+            </SpinningRay>
+          )}
+          <PlainText>{value}</PlainText>
+          <ChevronDownIcon size="medium" color="surface.icon.gray.muted" />
+        </AiTrigger>
+        {customMenu}
+      </div>
+    )
+  }
+
+  return (
+    <Dropdown selectionType="single">
+      <SelectInput
+        label=""
+        placeholder="Select ledger"
+        value={value || undefined}
+        onChange={({ values }) => onChange(values[0] ?? '')}
+      />
+      <DropdownOverlay>
+        <ActionList>
+          {options.map((opt) => (
+            <ActionListItem key={opt} title={opt} value={opt} />
+          ))}
+        </ActionList>
+      </DropdownOverlay>
+    </Dropdown>
+  )
+}
