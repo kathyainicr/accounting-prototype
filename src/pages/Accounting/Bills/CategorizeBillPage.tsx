@@ -30,12 +30,6 @@ import type { AIBillSuggestion, AIConfidenceTier } from './aiMockData'
 import { getConfidenceTierMeta } from './aiMockData'
 import { AiGradientText, getAiIconColor } from './aiStyles'
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
-
-/**
- * Horizontal mapping row — icon on left, label+description in centre, value on right.
- * Matches the reference image layout.
- */
 const MappingRow = ({
   resolved,
   label,
@@ -57,7 +51,6 @@ const MappingRow = ({
 }) => (
   <Box paddingY="spacing.5">
     <Box display="flex" alignItems="flex-start" justifyContent="space-between" gap="spacing.4">
-      {/* Icon + label area */}
       <Box display="flex" alignItems="center" gap="spacing.3" flex="1">
         {resolved ? (
           aiConfidence
@@ -71,7 +64,6 @@ const MappingRow = ({
         </Text>
       </Box>
 
-      {/* Value — right-aligned */}
       <Box textAlign="right">
         {resolved ? (
           <Box display="flex" alignItems="center" gap="spacing.2">
@@ -89,7 +81,6 @@ const MappingRow = ({
       </Box>
     </Box>
 
-    {/* Sub-content for missing rows (helper text, link, children) */}
     {!resolved && (
       <Box marginLeft="spacing.8" marginTop="spacing.2">
         {missingMessage && (
@@ -110,10 +101,6 @@ const MappingRow = ({
   </Box>
 )
 
-/**
- * Cost Center row — special two-column mapping box:
- * [RazorpayX: Sales badge] → [Tally Cost Center: dropdown or resolved value]
- */
 const CostCenterMappingRow = ({
   rxValue,
   tallyValue,
@@ -153,7 +140,6 @@ const CostCenterMappingRow = ({
       )}
     </Box>
 
-    {/* Two-column mapping box — always shown */}
     <Box
       marginTop="spacing.3"
       display="flex"
@@ -164,7 +150,6 @@ const CostCenterMappingRow = ({
       borderRadius="medium"
       overflow="hidden"
     >
-      {/* Source: RazorpayX */}
       <Box
         flex="1"
         padding="spacing.4"
@@ -181,7 +166,6 @@ const CostCenterMappingRow = ({
         </Badge>
       </Box>
 
-      {/* Destination: Tally */}
       <Box flex="1" padding="spacing.4" backgroundColor="surface.background.gray.moderate">
         <Text size="xsmall" color="surface.text.gray.muted" marginBottom="spacing.2">
           Tally Cost Center
@@ -219,8 +203,6 @@ const CostCenterMappingRow = ({
   </Box>
 )
 
-// ─── Props ────────────────────────────────────────────────────────────────────
-
 type Props = {
   bill: Bill | null
   isOpen: boolean
@@ -229,26 +211,23 @@ type Props = {
   aiSuggestion?: AIBillSuggestion
 }
 
-// ─── Main Modal ───────────────────────────────────────────────────────────────
-
 export const CategorizeBillModal = ({ bill, isOpen, onClose, onSave, aiSuggestion }: Props) => {
   const navigate = useNavigate()
   const { vendorLedgers, costCenters, setCostCenter, itemCategories } = useAccountingContext()
 
   const vendor = bill ? MOCK_VENDORS.find((v) => v.id === bill.vendorId) : null
 
-  const contextVendorLedger   = bill ? vendorLedgers[bill.vendorId] : ''
-  const contextItemResolved   = bill ? bill.items.every((item) => !!itemCategories[item.itemId]?.purchaseLedger) : false
-  const contextCostCenter     = bill ? costCenters[bill.id] : undefined
+  const contextVendorLedger = bill ? vendorLedgers[bill.vendorId] : ''
+  const contextItemResolved = bill ? bill.items.every((item) => !!itemCategories[item.itemId]?.purchaseLedger) : false
+  const contextCostCenter = bill ? costCenters[bill.id] : undefined
 
-  // AI suggestions pre-fill any missing mappings
-  const resolvedVendorLedger    = contextVendorLedger   || aiSuggestion?.suggestedVendorLedger || ''
-  const resolvedItemLedger      = contextItemResolved   ? '' : (aiSuggestion?.suggestedItemLedger ?? '')
-  const resolvedTallyCostCenter = contextCostCenter     || aiSuggestion?.suggestedCostCenter
+  const resolvedVendorLedger = contextVendorLedger || aiSuggestion?.suggestedVendorLedger || ''
+  const resolvedItemLedger = contextItemResolved ? '' : (aiSuggestion?.suggestedItemLedger ?? '')
+  const resolvedTallyCostCenter = contextCostCenter || aiSuggestion?.suggestedCostCenter
 
-  const vendorResolved       = !!resolvedVendorLedger
-  const itemResolved         = contextItemResolved || !!resolvedItemLedger
-  const costCenterResolved   = !!resolvedTallyCostCenter
+  const vendorResolved = !!resolvedVendorLedger
+  const itemResolved = contextItemResolved || !!resolvedItemLedger
+  const costCenterResolved = !!resolvedTallyCostCenter
 
   const missingCount = [!vendorResolved, !itemResolved, !costCenterResolved].filter(Boolean).length
 
@@ -270,7 +249,6 @@ export const CategorizeBillModal = ({ bill, isOpen, onClose, onSave, aiSuggestio
             height="calc(100vh - 180px)"
             margin="auto"
           >
-            {/* ── LEFT PANEL — static bill receipt (card box) ──────────────── */}
             <Box
               flex="1"
               padding="spacing.6"
@@ -281,7 +259,6 @@ export const CategorizeBillModal = ({ bill, isOpen, onClose, onSave, aiSuggestio
               overflowY="auto"
               backgroundColor="surface.background.gray.moderate"
             >
-              {/* Bill header */}
               <Box marginBottom="spacing.5">
                 <Heading size="medium" color="surface.text.gray.normal" weight="regular">
                   Bill# {bill.billNumber}
@@ -293,7 +270,6 @@ export const CategorizeBillModal = ({ bill, isOpen, onClose, onSave, aiSuggestio
 
               <Divider variant="subtle" />
 
-              {/* Vendor */}
               <Box marginY="spacing.5">
                 <Text size="small" color="surface.text.gray.muted" marginBottom="spacing.2">
                   Vendor
@@ -303,7 +279,6 @@ export const CategorizeBillModal = ({ bill, isOpen, onClose, onSave, aiSuggestio
                 </Heading>
               </Box>
 
-              {/* Items in a clearly bordered box */}
               <Box marginBottom="spacing.6">
                 <Text size="small" color="surface.text.gray.muted" marginBottom="spacing.2">
                   Items
@@ -344,7 +319,6 @@ export const CategorizeBillModal = ({ bill, isOpen, onClose, onSave, aiSuggestio
 
               <Divider variant="subtle" />
 
-              {/* Amount — prominent */}
               <Box marginY="spacing.5">
                 <Text size="small" color="surface.text.gray.muted" marginBottom="spacing.2">
                   Amount
@@ -352,7 +326,6 @@ export const CategorizeBillModal = ({ bill, isOpen, onClose, onSave, aiSuggestio
                 <Amount value={bill.amount} size="large" type="heading" currency="INR" weight='semibold' />
               </Box>
 
-              {/* Cost Center — always shown from bill data */}
               <Divider variant="subtle" />
               <Box marginTop="spacing.5">
                 <Text size="small" color="surface.text.gray.muted" marginBottom="spacing.1">
@@ -364,7 +337,6 @@ export const CategorizeBillModal = ({ bill, isOpen, onClose, onSave, aiSuggestio
               </Box>
             </Box>
 
-            {/* ── RIGHT PANEL — Tally mappings (card box) ───────────────────── */}
             <Box
               flex="1"
               padding="spacing.6"
@@ -375,7 +347,6 @@ export const CategorizeBillModal = ({ bill, isOpen, onClose, onSave, aiSuggestio
               overflowY="auto"
               backgroundColor="surface.background.gray.moderate"
             >
-              {/* AI header — shown only when AI has run */}
               {aiSuggestion && (
                 <Box display="flex" alignItems="center" gap="spacing.5" marginBottom="spacing.4">
                   <Box display="flex" alignItems="center" gap="spacing.3">
@@ -388,7 +359,6 @@ export const CategorizeBillModal = ({ bill, isOpen, onClose, onSave, aiSuggestio
                 </Box>
               )}
 
-              {/* Status banner */}
               {missingCount > 0 ? (
                 <Alert
                   description={`${missingCount} mapping${missingCount > 1 ? 's' : ''} missing`}
@@ -403,7 +373,6 @@ export const CategorizeBillModal = ({ bill, isOpen, onClose, onSave, aiSuggestio
                 </Text>
               )}
 
-              {/* Vendor Ledger */}
               <MappingRow
                 resolved={vendorResolved}
                 label="Vendor Ledger"
@@ -418,7 +387,6 @@ export const CategorizeBillModal = ({ bill, isOpen, onClose, onSave, aiSuggestio
               />
               <Divider variant="muted" />
 
-              {/* Item Ledger */}
               <MappingRow
                 resolved={itemResolved}
                 label="Item Ledger"
@@ -439,11 +407,9 @@ export const CategorizeBillModal = ({ bill, isOpen, onClose, onSave, aiSuggestio
               />
               <Divider variant="muted" />
 
-              {/* GST Ledger */}
               <MappingRow resolved label="GST Ledger" resolvedValue={bill.gstLedger} />
               <Divider variant="muted" />
 
-              {/* Cost Center — custom two-column mapping */}
               <CostCenterMappingRow
                 rxValue={rxCostCenter}
                 tallyValue={resolvedTallyCostCenter}
@@ -453,7 +419,6 @@ export const CategorizeBillModal = ({ bill, isOpen, onClose, onSave, aiSuggestio
               />
               <Divider variant="muted" />
 
-              {/* Posting Date */}
               <MappingRow resolved label="Posting Date" resolvedValue={bill.postingDate} />
             </Box>
           </Box>

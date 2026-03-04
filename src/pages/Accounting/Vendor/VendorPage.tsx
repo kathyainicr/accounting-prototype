@@ -15,6 +15,8 @@ import {
   QuickFilter,
   Badge,
   Text,
+  Button,
+  useToast,
 } from '@razorpay/blade/components'
 import type { TableData } from '@razorpay/blade/components'
 import { MOCK_VENDORS, VENDOR_STATUS_CONFIG, MOCK_LEDGER_OPTIONS } from './vendorMockData'
@@ -22,6 +24,7 @@ import type { Vendor, VendorStatus } from './vendorMockData'
 import { LedgerDropdown } from '../../../components/LedgerDropdown'
 import { useAccountingContext } from '../../../context/AccountingContext'
 import { VendorDetailDrawer } from './VendorDetailDrawer'
+import { AiBanner } from '../shared/AiBanner'
 
 type FilterId = 'all' | VendorStatus
 
@@ -33,8 +36,10 @@ const VendorPage = () => {
     pendingVendorSyncs,
   } = useAccountingContext()
 
+  const toast = useToast()
   const [activeFilter, setActiveFilter] = useState<FilterId>('all')
   const [selectedVendor, setSelectedVendor] = useState<Vendor | null>(null)
+  const [isRunning, setIsRunning] = useState(false)
 
   const vendorsWithRuntimeStatus = MOCK_VENDORS.map((v) => ({
     ...v,
@@ -53,8 +58,53 @@ const VendorPage = () => {
   const tableData: TableData<Vendor> = { nodes: filteredVendors }
   const hasPendingSync = vendorsWithRuntimeStatus.some((v) => v.status === 'pending_tally_sync')
 
+  const categoriseVendors = vendorsWithRuntimeStatus.filter(
+    (v) => v.status === 'categorise' && v.aiSuggestedLedger,
+  )
+
+  const handleAutoCategoriSe = async () => {
+    if (isRunning) return
+    setIsRunning(true)
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+    if (prefersReducedMotion) {
+      categoriseVendors.forEach((v) => setPendingVendorLedger(v.id, v.aiSuggestedLedger!))
+    } else {
+      for (const vendor of categoriseVendors) {
+        await new Promise<void>((resolve) => setTimeout(resolve, 150))
+        setPendingVendorLedger(vendor.id, vendor.aiSuggestedLedger!)
+      }
+    }
+
+    setIsRunning(false)
+
+    if (categoriseVendors.length > 0) {
+      toast.show({
+        content: `${categoriseVendors.length} vendor${categoriseVendors.length === 1 ? '' : 's'} categorised with AI`,
+        color: 'positive',
+        autoDismiss: true,
+      })
+    }
+  }
+
   return (
     <Box display="flex" flexDirection="column" gap="spacing.6">
+      <AiBanner
+        heading="Categorise vendors with AI"
+        description={`${categoriseVendors.length} vendors pending ledger mapping — Ray AI will auto-fill suggestions. Review or edit any time.`}
+      >
+        <Button
+          variant="secondary"
+          color="white"
+          size="medium"
+          isLoading={isRunning}
+          onClick={handleAutoCategoriSe}
+        >
+          Auto categorise vendors
+        </Button>
+      </AiBanner>
+
       <ListView>
         <ListViewFilters
           quickFilters={
@@ -101,11 +151,10 @@ const VendorPage = () => {
                   const ledgerVariant = (() => {
                     if (pendingLedger && pendingLedger === vendor.aiSuggestedLedger) return 'ai-approved'
                     if (pendingLedger) return 'manual'
-                    if (vendor.aiSuggestedLedger) return 'ai'
                     return 'empty'
                   })()
 
-                  const ledgerValue = pendingLedger || vendor.aiSuggestedLedger || ''
+                  const ledgerValue = pendingLedger
 
                   return (
                     <TableRow

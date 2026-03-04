@@ -7,14 +7,10 @@ import {
 } from '@razorpay/blade/components'
 import type { MappingResolution, ConfidenceTier } from '../types'
 
-// ─── AI gradient animation ────────────────────────────────────────────────────
-
 const gradientFlow = keyframes`
   from { background-position: 0% center }
   to { background-position: 200% center }
 `
-
-// ─── Ledger dropdown wrapper — ray icon + gradient text ───────────────────────
 
 export const LedgerDropdownWrap = styled.div`
   position: relative;
@@ -31,12 +27,10 @@ export const LedgerDropdownWrap = styled.div`
     opacity: 0.6;
   }
 
-  /* Push trigger text right to clear the icon */
   button[id^="dropdown-"] {
     padding-left: 36px !important;
   }
 
-  /* Gradient on the selected value text */
   [data-blade-component="text"].KFujK,
   [data-blade-component="text"][class*="KFujK"] {
     background: linear-gradient(
@@ -53,8 +47,6 @@ export const LedgerDropdownWrap = styled.div`
   }
 `
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
 export type MappingCardData = {
   entityId: string
   entityName: string
@@ -68,8 +60,6 @@ export type MappingCardData = {
   showInventoryToggle?: boolean
   suggestedItemLedger?: string
 }
-
-// ─── Resolved compact row ─────────────────────────────────────────────────────
 
 type ResolvedRowProps = {
   entityName: string
@@ -95,7 +85,6 @@ export const ResolvedRow = ({ entityName, resolution, onReset }: ResolvedRowProp
         borderColor="surface.border.gray.subtle"
         gap="spacing.3"
       >
-        {/* Spacer for checkbox column */}
         <Box width="36px" flexShrink={0} />
 
         <Box flex="1" display="flex" alignItems="center" gap="spacing.3" flexWrap="wrap">

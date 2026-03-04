@@ -1,11 +1,3 @@
-// ─── AI Categorisation Mock Data ─────────────────────────────────────────────
-//
-// Simulates the output of an AI analysis run on the "Categorise" bill queue.
-// confidence tiers:
-//   high   → 95–100%  — safe to bulk auto-apply
-//   medium → 50–80%   — AI has a suggestion, user should confirm
-//   low    → <50%     — no reliable suggestion, manual flow
-
 export type AIConfidenceTier = 'high' | 'medium' | 'low'
 
 export type AIBillSuggestion = {
@@ -24,7 +16,6 @@ export type AIBillSuggestion = {
 }
 
 export const AI_BILL_SUGGESTIONS: AIBillSuggestion[] = [
-  // ─── HIGH CONFIDENCE ──────────────────────────────────────────────────────
   {
     id: 'ai_001', billNumber: 'BILL-2024-0041', vendor: 'Acme Supplies Pvt Ltd',
     amount: 84320, date: '12 Jan 2024', confidence: 'high', confidenceScore: 99,
@@ -90,7 +81,6 @@ export const AI_BILL_SUGGESTIONS: AIBillSuggestion[] = [
     signalSource: 'GSTIN + item category',
   },
 
-  // ─── MEDIUM CONFIDENCE ────────────────────────────────────────────────────
   {
     id: 'ai_009', billNumber: 'BILL-2024-0049', vendor: 'Nova Technologies',
     amount: 175000, date: '21 Jan 2024', confidence: 'medium', confidenceScore: 72,
@@ -140,7 +130,6 @@ export const AI_BILL_SUGGESTIONS: AIBillSuggestion[] = [
     signalSource: 'Name partial match',
   },
 
-  // ─── LOW CONFIDENCE (manual) ──────────────────────────────────────────────
   {
     id: 'ai_015', billNumber: 'BILL-2024-0055', vendor: 'Omega Consulting',
     amount: 275000, date: '27 Jan 2024', confidence: 'low', confidenceScore: 31,
@@ -175,11 +164,9 @@ export const HIGH_CONFIDENCE_BILLS = AI_BILL_SUGGESTIONS.filter(b => b.confidenc
 export const MEDIUM_CONFIDENCE_BILLS = AI_BILL_SUGGESTIONS.filter(b => b.confidence === 'medium')
 export const LOW_CONFIDENCE_BILLS = AI_BILL_SUGGESTIONS.filter(b => b.confidence === 'low')
 
-/** Fast lookup: vendor display name → AI suggestion (for drawer enrichment) */
 export const AI_SUGGESTION_BY_VENDOR: Record<string, AIBillSuggestion> =
   Object.fromEntries(AI_BILL_SUGGESTIONS.map(s => [s.vendor, s]))
 
-/** Returns display label + Blade color for a confidence tier */
 export const getConfidenceTierMeta = (tier: AIConfidenceTier): {
   label: string
   color: 'positive' | 'notice' | 'negative'
@@ -189,8 +176,6 @@ export const getConfidenceTierMeta = (tier: AIConfidenceTier): {
   if (tier === 'medium') return { label: 'Mid', color: 'notice', tooltipTitle: 'Medium confidence' }
   return { label: 'Low', color: 'negative', tooltipTitle: 'Low confidence' }
 }
-
-// ─── Fire & Forget iteration counts ──────────────────────────────────────────
 
 export type FAFCounts = {
   needsAction: number
@@ -202,7 +187,6 @@ export type FAFCounts = {
   excluded: number
 }
 
-/** Fresh state: AI has not run yet */
 export const FAF_COUNTS_FRESH: FAFCounts = {
   needsAction: 458,
   needsReview: 0,
@@ -213,9 +197,6 @@ export const FAF_COUNTS_FRESH: FAFCounts = {
   excluded: 4,
 }
 
-/** Post-AI state: AI has classified the Needs Action bills.
- *  needsAction absorbs previous needsReview (low + medium conf = 158 + 53 = 211).
- *  needsReview is now 0 since the AI Suggestions tab is removed. */
 export const FAF_COUNTS_POST_AI: FAFCounts = {
   needsAction: 211,
   needsReview: 0,
@@ -231,11 +212,10 @@ export const FAF_DAYS_LEFT = 7
 
 export const AI_SUMMARY = {
   totalBills: 681,
-  categoriseBills: 458,   // bills in "Categorise" status (needs action)
+  categoriseBills: 458,
   highCount: HIGH_CONFIDENCE_BILLS.length,
   mediumCount: MEDIUM_CONFIDENCE_BILLS.length,
   lowCount: LOW_CONFIDENCE_BILLS.length,
-  // Scaled up counts for realism (the mock has fewer actual items)
   highCountDisplay: 247,
   mediumCountDisplay: 53,
   lowCountDisplay: 158,

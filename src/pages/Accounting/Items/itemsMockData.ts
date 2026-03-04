@@ -15,6 +15,10 @@ export type Item = {
   statusTimestamp: string
   aiSuggestedPurchaseLedger?: string
   aiSuggestedItemLedger?: string
+  confidence?: 'high' | 'medium' | 'none'
+  confidenceScore?: number
+  aiReasoning?: string
+  isNew?: boolean
 }
 
 export type ItemCategory = {
@@ -42,12 +46,12 @@ export const PURCHASE_LEDGER_OPTIONS = [
 ]
 
 export const ITEM_LEDGER_OPTIONS = [
-  'Stock-in-Hand',
-  'Finished Goods',
-  'Raw Materials',
-  'Work-in-Progress',
-  'Packing Materials',
-  'Closing Stock',
+  'Electronics Stock',
+  'IT Equipment Stock',
+  'Furniture Stock',
+  'Peripherals Stock',
+  'Printing Equipment Stock',
+  'General Stock',
 ]
 
 export const MOCK_ITEMS: Item[] = [
@@ -72,8 +76,12 @@ export const MOCK_ITEMS: Item[] = [
     hsnSac: '85285200',
     status: 'categorise',
     statusTimestamp: '10 Jan, 2024 at 02:00 PM',
-    aiSuggestedPurchaseLedger: 'Purchases @ 18%',
-    aiSuggestedItemLedger: 'Stock-in-Hand',
+    aiSuggestedPurchaseLedger: 'Engineering Expense',
+    aiSuggestedItemLedger: 'IT Equipment Stock',
+    confidence: 'high',
+    confidenceScore: 93,
+    aiReasoning: 'HSN 85285200 matches Display equipment — taxed at 18% GST',
+    isNew: false,
   },
   {
     id: 'item_002',
@@ -96,7 +104,12 @@ export const MOCK_ITEMS: Item[] = [
     hsnSac: '84716000',
     status: 'categorise',
     statusTimestamp: '12 Jan, 2024 at 10:45 AM',
-    aiSuggestedPurchaseLedger: 'Purchases @ 18%',
+    aiSuggestedPurchaseLedger: 'Purchases @ 12%',
+    aiSuggestedItemLedger: 'Peripherals Stock',
+    confidence: 'high',
+    confidenceScore: 89,
+    aiReasoning: 'HSN 84716000 matches Input devices — 12% GST bracket',
+    isNew: false,
   },
   {
     id: 'item_003',
@@ -119,8 +132,12 @@ export const MOCK_ITEMS: Item[] = [
     hsnSac: '84716000',
     status: 'categorise',
     statusTimestamp: '15 Jan, 2024 at 03:30 PM',
-    aiSuggestedPurchaseLedger: 'Purchases @ 18%',
-    aiSuggestedItemLedger: 'Stock-in-Hand',
+    aiSuggestedPurchaseLedger: 'Purchases @ 12%',
+    aiSuggestedItemLedger: 'Peripherals Stock',
+    confidence: 'medium',
+    confidenceScore: 72,
+    aiReasoning: 'Shared HSN with Keyboard; ledger assignment inferred from category',
+    isNew: true,
   },
   {
     id: 'item_007',
@@ -132,6 +149,12 @@ export const MOCK_ITEMS: Item[] = [
     hsnSac: '84433200',
     status: 'categorise',
     statusTimestamp: '18 Jan, 2024 at 11:00 AM',
+    aiSuggestedPurchaseLedger: 'Purchases @ 18%',
+    aiSuggestedItemLedger: 'Printing Equipment Stock',
+    confidence: 'medium',
+    confidenceScore: 58,
+    aiReasoning: 'HSN 84433200 matches Printing equipment — standard 18% GST bracket',
+    isNew: false,
   },
 ]
 

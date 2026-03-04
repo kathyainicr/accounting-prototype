@@ -11,8 +11,6 @@ import type {
   MappingContextValue,
 } from '../pages/Mapping/types'
 
-// ─── Context ──────────────────────────────────────────────────────────────────
-
 const MappingContext = createContext<MappingContextValue | null>(null)
 
 export const useMappingContext = (): MappingContextValue => {
@@ -20,8 +18,6 @@ export const useMappingContext = (): MappingContextValue => {
   if (!ctx) throw new Error('useMappingContext must be used inside MappingProvider')
   return ctx
 }
-
-// ─── Seed helpers ─────────────────────────────────────────────────────────────
 
 const buildInitialResolutions = <T extends { id: string }>(
   items: T[],
@@ -33,22 +29,16 @@ const buildInitialResolutions = <T extends { id: string }>(
   return result
 }
 
-// ─── Provider ─────────────────────────────────────────────────────────────────
-
 export const MappingProvider = ({ children }: { children: React.ReactNode }) => {
-  // Current position in the wizard
   const [activeStep, setActiveStep] = useState<MappingStepId>('vendors')
   const [activeSubStep, setActiveSubStep] = useState<ActivePhase>('high')
 
-  // Tracks which sub-steps the user has "Next'd" past — drives sidebar green checkmarks.
-  // Keys are `${stepId}:${phase}` e.g. "vendors:high"
   const [completedSubSteps, setCompletedSubSteps] = useState<Set<string>>(new Set())
 
   const markSubStepComplete = (stepId: MappingStepId, phase: ActivePhase) => {
     setCompletedSubSteps((prev) => new Set([...prev, `${stepId}:${phase}`]))
   }
 
-  // Per-item resolution state
   const [vendorResolutions, setVendorResolutions] = useState<Record<string, MappingResolution>>(
     () => buildInitialResolutions(MAPPING_VENDORS),
   )
@@ -60,8 +50,6 @@ export const MappingProvider = ({ children }: { children: React.ReactNode }) => 
   >(() => buildInitialResolutions(MAPPING_COST_CENTERS))
 
   const [showFinalCompletion, setShowFinalCompletion] = useState(false)
-
-  // ─── Resolution setters ───────────────────────────────────────────────────
 
   const setVendorResolution = (id: string, resolution: MappingResolution) => {
     setVendorResolutions((prev) => ({ ...prev, [id]: resolution }))

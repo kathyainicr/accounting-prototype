@@ -17,8 +17,6 @@ import {
 } from '../mappingMockData'
 import type { MappingStepId, ActivePhase } from '../types'
 
-// ─── Phase metadata ────────────────────────────────────────────────────────────
-
 const PHASES: ActivePhase[] = ['high', 'medium', 'unmatched']
 
 const PHASE_LABELS: Record<ActivePhase, string> = {
@@ -26,8 +24,6 @@ const PHASE_LABELS: Record<ActivePhase, string> = {
   medium: 'Needs Review',
   unmatched: 'Unmapped',
 }
-
-// ─── Bucket helpers (static — computed once at module level) ──────────────────
 
 const RAW_VENDOR_BUCKETS = getVendorBuckets()
 const RAW_ITEM_BUCKETS = getItemBuckets()
@@ -45,8 +41,6 @@ const getPhasesForStep = (stepId: MappingStepId): ActivePhase[] =>
 const getPhaseCount = (stepId: MappingStepId, phase: ActivePhase): number =>
   RAW_BUCKETS[stepId][phase].length
 
-// ─── Component ─────────────────────────────────────────────────────────────────
-
 export const StepSidebar = () => {
   const navigate = useNavigate()
   const {
@@ -63,9 +57,6 @@ export const StepSidebar = () => {
   const isParentComplete = (stepId: MappingStepId) =>
     getPhasesForStep(stepId).every((p) => isSubStepComplete(stepId, p))
 
-  // Build the flat element list that the outer StepGroup needs.
-  // The nested StepGroup MUST be a sibling of the parent StepItem — not a child —
-  // so that Blade renders the proper indented connectors between them.
   const elements: React.ReactElement[] = []
 
   for (const step of STEP_CONFIG) {
@@ -77,11 +68,10 @@ export const StepSidebar = () => {
       ? <StepItemIcon icon={CheckIcon} color="positive" />
       : <StepItemIndicator color="neutral" />
 
-    // When sub-steps are shown below, use 'full' so the connector reaches them.
     const parentProgress: 'full' | 'start' | 'none' = isComplete
       ? 'full'
       : isActive
-        ? 'full'   // connector reaches the nested sub-step group
+        ? 'full'
         : 'none'
 
     elements.push(
@@ -100,8 +90,6 @@ export const StepSidebar = () => {
       />
     )
 
-    // Sub-steps — rendered as a SIBLING StepGroup, not as StepItem children.
-    // This is the Blade-correct nesting pattern that produces proper connectors.
     if (isActive) {
       elements.push(
         <StepGroup key={`${step.id}-sub`} orientation="vertical" size="medium">

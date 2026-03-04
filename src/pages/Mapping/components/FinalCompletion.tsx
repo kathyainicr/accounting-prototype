@@ -5,11 +5,7 @@ import { useMappingContext } from '../../../context/MappingContext'
 import { STEP_CONFIG } from '../constants'
 import type { MappingStepId } from '../types'
 
-// ─── Easing ───────────────────────────────────────────────────────────────────
-
 const EXPO_OUT = [0.22, 1, 0.36, 1] as const
-
-// ─── Row animation variants ───────────────────────────────────────────────────
 
 const rowContainerVariants = {
   hidden: {},
@@ -20,8 +16,6 @@ const rowItemVariants = {
   hidden: { opacity: 0, x: -10 },
   show: { opacity: 1, x: 0, transition: { duration: 0.38, ease: EXPO_OUT } },
 }
-
-// ─── Sonar ring ───────────────────────────────────────────────────────────────
 
 const SonarRing = ({ delay = 0 }: { delay?: number }) => (
   <motion.div
@@ -37,8 +31,6 @@ const SonarRing = ({ delay = 0 }: { delay?: number }) => (
     }}
   />
 )
-
-// ─── Animated step summary row ────────────────────────────────────────────────
 
 const AnimatedStepSummaryRow = ({
   stepId,
@@ -71,12 +63,8 @@ const AnimatedDivider = () => (
   </motion.div>
 )
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
 const countByStatus = (resolutions: Record<string, { status: string }>, status: string) =>
   Object.values(resolutions).filter((r) => r.status === status).length
-
-// ─── Component ────────────────────────────────────────────────────────────────
 
 export const FinalCompletion = () => {
   const navigate = useNavigate()
@@ -98,7 +86,6 @@ export const FinalCompletion = () => {
   }
 
   return (
-    // Fills the ModalBody — no longer absolute positioned
     <Box
       height="100%"
       display="flex"
@@ -107,7 +94,6 @@ export const FinalCompletion = () => {
       position="relative"
       backgroundColor="surface.background.gray.subtle"
     >
-      {/* AI teal ambient bloom — references the Ray brand colour */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -125,7 +111,6 @@ export const FinalCompletion = () => {
         }}
       />
 
-      {/* Card — scales + slides up */}
       <motion.div
         initial={{ opacity: 0, scale: 0.93, y: 24 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -134,7 +119,6 @@ export const FinalCompletion = () => {
       >
         <Box display="flex" flexDirection="column" alignItems="center" gap="spacing.5">
 
-          {/* Icon + sonar rings */}
           <motion.div
             initial={{ opacity: 0, scale: 0.3 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -156,7 +140,6 @@ export const FinalCompletion = () => {
             </Box>
           </motion.div>
 
-          {/* Heading */}
           <motion.div
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
@@ -171,7 +154,6 @@ export const FinalCompletion = () => {
             </Text>
           </motion.div>
 
-          {/* Step summary card */}
           <motion.div
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
@@ -203,7 +185,6 @@ export const FinalCompletion = () => {
             </Box>
           </motion.div>
 
-          {/* CTAs — last to appear */}
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}

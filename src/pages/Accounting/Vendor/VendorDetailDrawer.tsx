@@ -115,17 +115,13 @@ export const VendorDetailDrawer = ({ selectedVendor, onClose }: Props) => {
   const ledgerVariant = (() => {
     if (pendingLedger && pendingLedger === vendor?.aiSuggestedLedger) return 'ai-approved'
     if (pendingLedger) return 'manual'
-    if (vendor?.aiSuggestedLedger) return 'ai'
     return 'empty'
   })()
 
-  const effectiveLedger = pendingLedger || vendor?.aiSuggestedLedger || ''
+  const effectiveLedger = pendingLedger
 
   const handleSaveAndSync = () => {
     if (!vendor || !effectiveLedger) return
-    if (!pendingLedger && vendor.aiSuggestedLedger) {
-      setPendingVendorLedger(vendor.id, vendor.aiSuggestedLedger)
-    }
     addPendingVendorSync(vendor.id)
     onClose()
   }

@@ -24,8 +24,6 @@ import {
 import type { IconComponent } from '@razorpay/blade/components'
 import { isNavItemActive } from './utils'
 
-// ─── Tab config ───────────────────────────────────────────────────────────────
-
 type TabItem = {
   title: string
   href: string
@@ -38,8 +36,6 @@ const TAB_ITEMS: TabItem[] = [
   { title: 'Payments', href: '/payments', icon: AcceptPaymentsIcon, isAlwaysOverflowing: true },
   { title: 'Payroll', href: '/payroll-product', icon: RazorpayxPayrollIcon, isAlwaysOverflowing: true },
 ]
-
-// ─── Component ────────────────────────────────────────────────────────────────
 
 export const TopNavComponent = () => {
   const location = useLocation()

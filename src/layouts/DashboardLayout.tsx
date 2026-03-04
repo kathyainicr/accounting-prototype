@@ -18,10 +18,8 @@ export const DashboardLayout = () => {
       overflow="hidden"
       backgroundColor="surface.background.gray.moderate"
     >
-      {/* SideNav — position="absolute" anchored inside this relative container */}
       <SideNavComponent />
 
-      {/* Main content area — offset by expanded SideNav width at tablet+ */}
       <Box
         as="main"
         flex="1"

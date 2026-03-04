@@ -1,12 +1,6 @@
-// ─── Step identifiers ─────────────────────────────────────────────────────────
-
 export type MappingStepId = 'vendors' | 'items' | 'costCenters'
 
-// ─── Confidence phase (maps to the 3 buckets: Ready to Sync / Needs Review / Unmapped) ──
-
 export type ActivePhase = 'high' | 'medium' | 'unmatched'
-
-// ─── Per-item resolution ──────────────────────────────────────────────────────
 
 export type ResolutionStatus = 'pending' | 'confirmed' | 'skipped'
 
@@ -16,11 +10,7 @@ export type MappingResolution = {
   mappedTo: string   // '' when pending or skipped
 }
 
-// ─── Confidence bucket ────────────────────────────────────────────────────────
-
 export type ConfidenceTier = 'high' | 'medium' | 'none'
-
-// ─── Shared entity shape for mapping cards ────────────────────────────────────
 
 export type MappingVendor = {
   id: string
@@ -56,20 +46,15 @@ export type MappingCostCenter = {
   isNew: boolean
 }
 
-// ─── Context value ────────────────────────────────────────────────────────────
-
 export type MappingContextValue = {
-  // Current position in the wizard
   activeStep: MappingStepId
   setActiveStep: (step: MappingStepId) => void
   activeSubStep: ActivePhase
   setActiveSubStep: (phase: ActivePhase) => void
 
-  // Tracks which sub-steps the user has "Next'd" past — drives sidebar green checkmarks
-  completedSubSteps: Set<string>    // keys are `${stepId}:${phase}`
+  completedSubSteps: Set<string>
   markSubStepComplete: (stepId: MappingStepId, phase: ActivePhase) => void
 
-  // Per-item resolution state
   vendorResolutions: Record<string, MappingResolution>
   itemResolutions: Record<string, MappingResolution>
   costCenterResolutions: Record<string, MappingResolution>
@@ -78,7 +63,6 @@ export type MappingContextValue = {
   setItemResolution: (id: string, resolution: MappingResolution) => void
   setCostCenterResolution: (id: string, resolution: MappingResolution) => void
 
-  // Final completion overlay
   showFinalCompletion: boolean
   setShowFinalCompletion: (show: boolean) => void
 }

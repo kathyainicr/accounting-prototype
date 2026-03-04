@@ -3,11 +3,7 @@ import { Box, Heading, Text, Button, CheckCircleIcon } from '@razorpay/blade/com
 import type { MappingStepId } from '../types'
 import { STEP_CONFIG } from '../constants'
 
-// ─── Easing ───────────────────────────────────────────────────────────────────
-
 const EXPO_OUT = [0.22, 1, 0.36, 1] as const
-
-// ─── Variants ─────────────────────────────────────────────────────────────────
 
 const containerVariants = {
   hidden: {},
@@ -24,8 +20,6 @@ const itemVariants = {
   show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: EXPO_OUT } },
 }
 
-// ─── Sonar ring ───────────────────────────────────────────────────────────────
-
 const SonarRing = ({ delay = 0 }: { delay?: number }) => (
   <motion.div
     initial={{ scale: 1, opacity: 0.5 }}
@@ -40,8 +34,6 @@ const SonarRing = ({ delay = 0 }: { delay?: number }) => (
     }}
   />
 )
-
-// ─── Component ────────────────────────────────────────────────────────────────
 
 type Props = {
   stepId: MappingStepId
@@ -64,7 +56,6 @@ export const StepSuccess = ({ stepId, confirmedCount, skippedCount, onContinue }
       >
         <Box display="flex" flexDirection="column" alignItems="center" gap="spacing.4" textAlign="center">
 
-          {/* Icon with sonar rings */}
           <motion.div variants={iconVariants} style={{ position: 'relative', width: 56, height: 56 }}>
             <SonarRing delay={0.05} />
             <SonarRing delay={0.42} />
@@ -81,14 +72,12 @@ export const StepSuccess = ({ stepId, confirmedCount, skippedCount, onContinue }
             </Box>
           </motion.div>
 
-          {/* Heading */}
           <motion.div variants={itemVariants}>
             <Heading size="large" color="surface.text.gray.normal">
               All {step.entityLabel} mapped!
             </Heading>
           </motion.div>
 
-          {/* Stats */}
           <motion.div variants={itemVariants}>
             <Text color="surface.text.gray.muted">
               {confirmedCount} confirmed
@@ -104,7 +93,6 @@ export const StepSuccess = ({ stepId, confirmedCount, skippedCount, onContinue }
             </motion.div>
           )}
 
-          {/* CTA */}
           <motion.div variants={itemVariants} style={{ marginTop: 16 }}>
             <Button onClick={onContinue} size="large">
               {isLastStep ? 'Finish mapping' : `Continue to ${step.nextStepLabel} →`}

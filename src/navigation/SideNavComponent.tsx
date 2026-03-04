@@ -12,14 +12,10 @@ import { NAV_SECTIONS, FOOTER_NAV_ITEM } from './navItems'
 import type { L1NavItem, L2NavItem } from './navItems'
 import { isNavItemActive } from './utils'
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
 const getChildHrefs = (children: L2NavItem[] | undefined): string[] => {
   if (!children) return []
   return children.map((child) => child.href)
 }
-
-// ─── Sub-components ───────────────────────────────────────────────────────────
 
 const L2NavLinkItem = ({
   item,
@@ -67,9 +63,6 @@ const L1NavLinkItem = ({
     )
   }
 
-  // Point parent to first child's href — Blade pattern:
-  // clicking the L1 trigger navigates to the first sub-item,
-  // which sets isActive=true and reveals the L2 panel.
   const firstChildHref = item.children[0].href
 
   return (
@@ -88,8 +81,6 @@ const L1NavLinkItem = ({
     </SideNavLink>
   )
 }
-
-// ─── Main component ───────────────────────────────────────────────────────────
 
 export const SideNavComponent = () => {
   const location = useLocation()

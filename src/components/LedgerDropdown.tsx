@@ -1,16 +1,3 @@
-/**
- * LedgerDropdown — reusable ledger selector with 4 variants:
- *
- * 'empty'       → plain Blade SelectInput (no AI involvement)
- * 'ai'          → AI-pre-filled: spinning RayIcon + gradient text, custom menu
- * 'manual'      → user overrode AI: plain custom trigger, custom menu with RayIcon on AI suggestion
- * 'ai-approved' → user confirmed AI: static RayIcon trigger, custom menu with RayIcon on AI suggestion
- *
- * When aiSuggestedValue is set, 'manual' and 'ai-approved' use a custom menu
- * instead of Blade's ActionList so we can show a RayIcon next to the AI-suggested
- * option — Blade's ActionListItem doesn't accept arbitrary JSX as leading.
- */
-
 import { useState, useEffect, useRef } from 'react'
 import styled, { keyframes } from 'styled-components'
 import {
@@ -28,11 +15,9 @@ export type LedgerDropdownVariant = 'empty' | 'ai' | 'manual' | 'ai-approved'
 
 type Props = {
   variant: LedgerDropdownVariant
-  /** Selected value (or AI suggestion for 'ai' variant) */
   value?: string
   options: string[]
   onChange: (value: string) => void
-  /** Which option was AI-suggested — shows a RayIcon next to it in the menu */
   aiSuggestedValue?: string
   isDrawer?: boolean
   label?: string
@@ -107,7 +92,6 @@ const PlainText = styled.span`
   text-overflow: ellipsis;
 `
 
-// position: fixed so it escapes TableCell's overflow: hidden
 const MenuContainer = styled.div`
   position: fixed;
   z-index: 9999;
@@ -119,6 +103,8 @@ const MenuContainer = styled.div`
   display: flex;
   flex-direction: column;
   gap: 2px;
+  max-height: 240px;
+  overflow-y: auto;
 `
 
 const MenuItem = styled.button<{ $isSelected?: boolean }>`

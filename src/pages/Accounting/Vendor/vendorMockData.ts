@@ -13,6 +13,10 @@ export type Vendor = {
   statusTimestamp: string
   vendorLedger?: string
   aiSuggestedLedger?: string
+  confidence?: 'high' | 'medium' | 'none'
+  confidenceScore?: number
+  aiReasoning?: string
+  isNew?: boolean
 }
 
 export type VendorStatusConfigEntry = AccountingStatusConfigEntry
@@ -31,6 +35,21 @@ export const MOCK_LEDGER_OPTIONS = [
   'Tech Services A/C',
   'Sundry Creditors',
   'Capital Expense A/C',
+  'Acme Supplies Pvt Ltd',
+  'TechCorp Solutions',
+  'Delta Logistics',
+  'Sunrise Electronics',
+  'Alpha Resources',
+  'Omega Consulting',
+  'Premium Parts Co.',
+  'Pinnacle Services',
+  'Global Trade Enterprises',
+  'Sterling Supplies',
+  'Metro Infrastructure Ltd',
+  'Nova Technologies',
+  'Horizon Manufacturing',
+  'Prime Vendors Ltd',
+  'Digital Solutions Inc',
 ]
 
 export const COST_CENTER_OPTIONS = ['Marketing', 'Indore', 'Sales', 'Operations', 'Finance']
@@ -64,7 +83,11 @@ export const MOCK_VENDORS: Vendor[] = [
     status: 'categorise',
     createdOn: '04 Jan, 2024',
     statusTimestamp: '04 Jan, 2024 at 11:45 AM',
-    aiSuggestedLedger: 'Capital Expense A/C',
+    aiSuggestedLedger: 'Delta Logistics',
+    confidence: 'high',
+    confidenceScore: 97,
+    aiReasoning: 'Exact GSTIN match found in Tally ledger history',
+    isNew: false,
   },
   {
     id: 'vendor_004',
@@ -84,7 +107,11 @@ export const MOCK_VENDORS: Vendor[] = [
     status: 'categorise',
     createdOn: '08 Jan, 2024',
     statusTimestamp: '08 Jan, 2024 at 10:30 AM',
-    aiSuggestedLedger: 'Raw Materials A/C',
+    aiSuggestedLedger: 'Alpha Resources',
+    confidence: 'high',
+    confidenceScore: 94,
+    aiReasoning: 'Strong GSTIN match and historical transaction pattern',
+    isNew: false,
   },
   {
     id: 'vendor_012',
@@ -94,6 +121,11 @@ export const MOCK_VENDORS: Vendor[] = [
     status: 'categorise',
     createdOn: '09 Jan, 2024',
     statusTimestamp: '09 Jan, 2024 at 01:09 PM',
+    aiSuggestedLedger: 'Omega Consulting Corp',
+    confidence: 'high',
+    confidenceScore: 97,
+    aiReasoning: 'Name pattern matches similar vendors mapped to Marketing Expense',
+    isNew: false,
   },
   {
     id: 'vendor_005',
@@ -113,7 +145,11 @@ export const MOCK_VENDORS: Vendor[] = [
     status: 'categorise',
     createdOn: '13 Jan, 2024',
     statusTimestamp: '13 Jan, 2024 at 02:15 PM',
-    aiSuggestedLedger: 'Tech Services A/C',
+    aiSuggestedLedger: 'Pinnacle Services',
+    confidence: 'medium',
+    confidenceScore: 68,
+    aiReasoning: 'Partial name similarity; no GSTIN available for verification',
+    isNew: false,
   },
   {
     id: 'vendor_003',
@@ -133,6 +169,11 @@ export const MOCK_VENDORS: Vendor[] = [
     status: 'categorise',
     createdOn: '17 Jan, 2024',
     statusTimestamp: '17 Jan, 2024 at 09:30 AM',
+    aiSuggestedLedger: 'Sterling Corp',
+    confidence: 'high',
+    confidenceScore: 91,
+    aiReasoning: 'GSTIN matched; vendor category aligns with Office Supplies ledger',
+    isNew: true,
   },
   {
     id: 'vendor_006',
@@ -152,6 +193,11 @@ export const MOCK_VENDORS: Vendor[] = [
     status: 'categorise',
     createdOn: '21 Jan, 2024',
     statusTimestamp: '21 Jan, 2024 at 10:00 AM',
+    aiSuggestedLedger: 'Nova Technologies',
+    confidence: 'high',
+    confidenceScore: 91,
+    aiReasoning: 'GSTIN matched; vendor category aligns with Tech Services ledger',
+    isNew: true,
   },
   {
     id: 'vendor_008',
@@ -171,6 +217,11 @@ export const MOCK_VENDORS: Vendor[] = [
     status: 'categorise',
     createdOn: '25 Jan, 2024',
     statusTimestamp: '25 Jan, 2024 at 03:00 PM',
+    aiSuggestedLedger: 'Prime Vendors Ltd',
+    confidence: 'medium',
+    confidenceScore: 61,
+    aiReasoning: 'Name pattern matches similar vendors mapped to Marketing Expense',
+    isNew: false,
   },
   {
     id: 'vendor_007',

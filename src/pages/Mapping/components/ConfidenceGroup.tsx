@@ -24,16 +24,12 @@ import { ResolvedRow, LedgerDropdownWrap } from './MappingCard'
 import type { MappingCardData } from './MappingCard'
 import type { MappingResolution } from '../types'
 
-// ─── Styled wrapper ────────────────────────────────────────────────────────────
-
 const TableWrap = styled.div`
   flex: 1;
   min-height: 0;
   display: flex;
   flex-direction: column;
 `
-
-// ─── Empty state ──────────────────────────────────────────────────────────────
 
 const AllDoneState = () => (
   <Box
@@ -52,8 +48,6 @@ const AllDoneState = () => (
   </Box>
 )
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
 type Props = {
   items: MappingCardData[]
   resolutions: Record<string, MappingResolution>
@@ -65,8 +59,6 @@ type Props = {
 }
 
 type MappingTableNode = MappingCardData & { id: string }
-
-// ─── Component ────────────────────────────────────────────────────────────────
 
 export const ConfidenceGroup = ({
   items,
@@ -135,7 +127,6 @@ export const ConfidenceGroup = ({
                   {data.map((item) => (
                     <TableRow key={item.entityId} item={item}>
 
-                      {/* Entity info */}
                       <TableCell>
                         <Box display="flex" flexDirection="column" gap="spacing.1">
                           <Box display="flex" alignItems="center" gap="spacing.2">
@@ -153,7 +144,6 @@ export const ConfidenceGroup = ({
                         </Box>
                       </TableCell>
 
-                      {/* Tally ledger dropdown */}
                       <TableCell>
                         <LedgerDropdownWrap>
                           <span className="ray-icon">
@@ -180,7 +170,6 @@ export const ConfidenceGroup = ({
                         </LedgerDropdownWrap>
                       </TableCell>
 
-                      {/* Inventory toggle — items step only */}
                       {showInventoryColumns && (
                         <TableCell>
                           <Switch
@@ -194,7 +183,6 @@ export const ConfidenceGroup = ({
                         </TableCell>
                       )}
 
-                      {/* Item ledger — disabled when inventory off */}
                       {showInventoryColumns && (
                         <TableCell>
                           <LedgerDropdownWrap>
@@ -231,7 +219,6 @@ export const ConfidenceGroup = ({
           </Table>
         )}
 
-        {/* Resolved rows — only while pending items still exist (for undo context) */}
         {!allResolved && resolvedItems.map((item) => {
           const resolution = resolutions[item.entityId]
           return (

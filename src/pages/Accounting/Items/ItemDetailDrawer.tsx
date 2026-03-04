@@ -116,7 +116,7 @@ export const ItemDetailDrawer = ({ selectedItem, onClose }: Props) => {
 
   const savedCategory = item ? itemCategories[item.id] : undefined
   const pendingPurchaseLedger = item ? (pendingItemPurchaseLedgers[item.id] ?? '') : ''
-  const effectivePurchaseLedger = pendingPurchaseLedger || item?.aiSuggestedPurchaseLedger || ''
+  const effectivePurchaseLedger = pendingPurchaseLedger
 
   const purchaseLedgerVariant: LedgerDropdownVariant = (() => {
     if (pendingPurchaseLedger && pendingPurchaseLedger === item?.aiSuggestedPurchaseLedger) return 'ai-approved'
@@ -136,9 +136,6 @@ export const ItemDetailDrawer = ({ selectedItem, onClose }: Props) => {
 
   const handleSaveAndSync = () => {
     if (!item || !effectivePurchaseLedger) return
-    if (!pendingPurchaseLedger && item.aiSuggestedPurchaseLedger) {
-      setPendingItemPurchaseLedger(item.id, item.aiSuggestedPurchaseLedger)
-    }
     setItemCategory(item.id, {
       purchaseLedger: effectivePurchaseLedger,
       trackInventory,

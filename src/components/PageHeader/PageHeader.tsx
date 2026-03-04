@@ -39,16 +39,13 @@ export const PageHeader = () => {
       alignItems="center"
       paddingBottom="spacing.6"
     >
-      {/* Dynamic page title */}
       <Heading as="h1" size="large" color="surface.text.gray.normal" weight="semibold">
         {pageTitle}
       </Heading>
 
-      {/* Right-side actions */}
       <Box display="flex" flexDirection="row" alignItems="center" gap="spacing.4">
         <SearchInput placeholder="Search..." accessibilityLabel="Search" />
 
-        {/* Create New dropdown */}
         <Menu openInteraction="click">
           <Button variant="secondary" icon={ChevronDownIcon} iconPosition="right">
             Create New
@@ -62,7 +59,6 @@ export const PageHeader = () => {
           </MenuOverlay>
         </Menu>
 
-        {/* Avatar → opens profile / settings menu (controlled) */}
         <Menu
           isOpen={isProfileMenuOpen}
           onOpenChange={({ isOpen }) => setIsProfileMenuOpen(isOpen)}
@@ -75,7 +71,6 @@ export const PageHeader = () => {
           />
 
           <MenuOverlay minWidth="220px">
-            {/* Light Theme toggle — custom row with Switch on the right */}
             <Box
               display="flex"
               justifyContent="space-between"

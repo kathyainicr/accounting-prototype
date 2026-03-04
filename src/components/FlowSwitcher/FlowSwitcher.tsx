@@ -1,8 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
 type Flow = {
   id: string
   label: string
@@ -10,8 +8,6 @@ type Flow = {
   route: string
   disabled: boolean
 }
-
-// ─── Flow registry ────────────────────────────────────────────────────────────
 
 const FLOWS: Flow[] = [
   {
@@ -29,8 +25,6 @@ const FLOWS: Flow[] = [
     disabled: false,
   },
 ]
-
-// ─── Icons ────────────────────────────────────────────────────────────────────
 
 const LayersIcon = () => (
   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -62,15 +56,12 @@ const LockIcon = () => (
   </svg>
 )
 
-// ─── Component ────────────────────────────────────────────────────────────────
-
 export const FlowSwitcher = () => {
   const [isOpen, setIsOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
   const location = useLocation()
 
-  // Detect current active flow from URL
   const activeFlow = FLOWS.find(f => !f.disabled && location.pathname.startsWith(f.route)) ?? FLOWS[0]
 
   useEffect(() => {
@@ -98,7 +89,6 @@ export const FlowSwitcher = () => {
           font-family: 'SF Mono', 'Cascadia Code', 'Fira Mono', 'Consolas', monospace;
         }
 
-        /* ── Panel ── */
         .fs-panel {
           width: 228px;
           background: rgba(14, 14, 20, 0.92);
@@ -131,7 +121,6 @@ export const FlowSwitcher = () => {
           border-bottom: 1px solid rgba(255, 255, 255, 0.06);
         }
 
-        /* ── Flow items ── */
         .fs-item {
           display: flex;
           align-items: center;
@@ -204,7 +193,6 @@ export const FlowSwitcher = () => {
           flex-shrink: 0;
         }
 
-        /* ── Pill ── */
         .fs-pill {
           display: inline-flex;
           align-items: center;
@@ -266,7 +254,6 @@ export const FlowSwitcher = () => {
 
       <div ref={containerRef} className="fs-wrap">
 
-        {/* ── Expanded panel ── */}
         {isOpen && (
           <div className="fs-panel">
             <div className="fs-panel-header">Flows</div>
@@ -311,7 +298,6 @@ export const FlowSwitcher = () => {
           </div>
         )}
 
-        {/* ── Collapsed pill ── */}
         <button className="fs-pill" onClick={() => setIsOpen(prev => !prev)}>
           <span className="fs-pill-dot" />
           <span className="fs-pill-icon">

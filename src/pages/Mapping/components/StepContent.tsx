@@ -15,8 +15,6 @@ import { ConfidenceGroup } from './ConfidenceGroup'
 import type { MappingCardData } from './MappingCard'
 import type { MappingVendor, MappingItem, MappingCostCenter, MappingStepId, MappingResolution, ActivePhase } from '../types'
 
-// ─── Entity → card data normalizers ──────────────────────────────────────────
-
 const toBillNo = (id: string) => `INV-${id.split('_')[1]}`
 
 const vendorToCard = (v: MappingVendor): MappingCardData => ({
@@ -54,8 +52,6 @@ const costCenterToCard = (cc: MappingCostCenter): MappingCardData => ({
   aiReasoning: cc.aiReasoning || undefined,
 })
 
-// ─── Phase labels + descriptions ─────────────────────────────────────────────
-
 const PHASE_INFO: Record<ActivePhase, { title: string; description: string }> = {
   high: {
     title: 'Ready to Sync',
@@ -70,9 +66,6 @@ const PHASE_INFO: Record<ActivePhase, { title: string; description: string }> = 
     description: 'No match found. Assign a ledger manually or skip to handle later.',
   },
 }
-
-// ─── Sub-step sequence builder ────────────────────────────────────────────────
-// Builds the ordered flat list of (stepId, phase) pairs, skipping empty buckets.
 
 type SubStep = { stepId: MappingStepId; phase: ActivePhase }
 const PHASES: ActivePhase[] = ['high', 'medium', 'unmatched']
@@ -96,8 +89,6 @@ const buildSequence = (
   return seq
 }
 
-// ─── Component ────────────────────────────────────────────────────────────────
-
 export const StepContent = () => {
   const navigate = useNavigate()
   const {
@@ -117,8 +108,6 @@ export const StepContent = () => {
 
   const { setVendorLedger, setItemCategory } = useAccountingContext()
 
-  // ─── Buckets (static mock data) ───────────────────────────────────────────
-
   const vendorBuckets = useMemo(() => {
     const b = getVendorBuckets()
     return { high: b.high.map(vendorToCard), medium: b.medium.map(vendorToCard), unmatched: b.unmatched.map(vendorToCard) }
@@ -134,8 +123,6 @@ export const StepContent = () => {
     return { high: b.high.map(costCenterToCard), medium: b.medium.map(costCenterToCard), unmatched: b.unmatched.map(costCenterToCard) }
   }, [])
 
-  // ─── Sequence + position ──────────────────────────────────────────────────
-
   const sequence = useMemo(
     () => buildSequence(vendorBuckets, itemBuckets, ccBuckets),
     [vendorBuckets, itemBuckets, ccBuckets]
@@ -145,8 +132,6 @@ export const StepContent = () => {
     (s) => s.stepId === activeStep && s.phase === activeSubStep
   )
   const isFirstSubStep = currentIndex <= 0
-
-  // ─── Resolution helpers ───────────────────────────────────────────────────
 
   const makeHandlers = (
     setResolution: (id: string, r: MappingResolution) => void,
@@ -162,10 +147,7 @@ export const StepContent = () => {
       setResolution(id, { entityId: id, status: 'pending', mappedTo: '' }),
   })
 
-  // ─── Footer handlers ──────────────────────────────────────────────────────
-
   const handleNext = () => {
-    // Mark current sub-step complete (drives green checkmark in sidebar)
     markSubStepComplete(activeStep, activeSubStep)
 
     if (currentIndex < sequence.length - 1) {
@@ -186,8 +168,6 @@ export const StepContent = () => {
       navigate(`/v2/accounting/map/${STEP_TO_SLUG[prev.stepId]}`)
     }
   }
-
-  // ─── Current phase items + handlers ──────────────────────────────────────
 
   const currentBuckets = activeStep === 'vendors' ? vendorBuckets
     : activeStep === 'items' ? itemBuckets
@@ -225,7 +205,6 @@ export const StepContent = () => {
   return (
     <Box flex="1" display="flex" flexDirection="column" overflowY="hidden">
 
-      {/* Header — shows current phase (sub-step) title */}
       <Box paddingX="spacing.8" paddingTop="spacing.8" paddingBottom="spacing.4" flexShrink={0}>
         <Text size="small" color="surface.text.gray.muted" marginBottom="spacing.1">
           {stepConfig.label}
@@ -238,7 +217,6 @@ export const StepContent = () => {
         </Text>
       </Box>
 
-      {/* Table — fills remaining height */}
       <Box flex="1" display="flex" flexDirection="column" overflow="hidden" paddingX="spacing.8" minHeight="0px">
         <ConfidenceGroup
           items={currentItems}
@@ -251,7 +229,6 @@ export const StepContent = () => {
         />
       </Box>
 
-      {/* Footer — Blade Box, sibling of padded content, full right panel width */}
       <Box
         flexShrink={0}
         borderTopColor="surface.border.gray.muted"

@@ -36,7 +36,6 @@ export type NavSection = {
 
 export const NAV_SECTIONS: NavSection[] = [
   {
-    // Section 1 — primary nav (no visible title = renders as plain divider)
     items: [
       {
         title: 'Home',
@@ -70,7 +69,6 @@ export const NAV_SECTIONS: NavSection[] = [
     ],
   },
   {
-    // Section 2 — secondary nav (no visible title = renders as divider)
     items: [
       {
         title: 'Insights',

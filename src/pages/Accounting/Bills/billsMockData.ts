@@ -1,8 +1,6 @@
 import { ACCOUNTING_STATUS_CONFIG } from '../shared/accountingStatusConfig'
 import type { AccountingStatusConfigEntry } from '../shared/accountingStatusConfig'
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
 export type BillStatus =
   | 'categorise'
   | 'excluded'
@@ -20,9 +18,9 @@ export type BillItem = {
 export type TallyDetails = {
   type: string
   vendorLedger: string
-  itemLedgers: string | null   // null → show "Add +"
+  itemLedgers: string | null
   tdsLedger: string
-  costCenter: string | null    // null → show "--"
+  costCenter: string | null
   invoiceType: string
   postingDate: string
 }
@@ -37,22 +35,20 @@ export type VendorPayment = {
 
 export type Bill = {
   id: string
-  vendorId: string      // links to Vendor.id in vendorMockData
-  vendor: string        // display name (kept for backwards compat)
+  vendorId: string
+  vendor: string
   billNumber: string
   amount: number
   status: BillStatus
   createdOn: string
   statusTimestamp: string
   statusDescription?: string
-  items: BillItem[]     // line items shown in Categorise Bill left panel
-  gstLedger: string     // always "GST Input Credit"
-  postingDate: string   // auto-filled from createdOn
+  items: BillItem[]
+  gstLedger: string
+  postingDate: string
   tallyDetails: TallyDetails
   vendorPayment: VendorPayment
 }
-
-// ─── Status config ────────────────────────────────────────────────────────────
 
 export type StatusConfigEntry = AccountingStatusConfigEntry & {
   actionType: 'categorise' | 'error_found' | null
@@ -82,24 +78,19 @@ export const STATUS_CONFIG: Record<BillStatus, StatusConfigEntry> = {
   },
 }
 
-// ─── Mock data ────────────────────────────────────────────────────────────────
-
-// Vendor IDs match MOCK_VENDORS in vendorMockData.ts
-// vendor_001–008: already synced → bills linked to them show ✓ vendor ledger in Categorise modal
-// vendor_009–015: categorise → bills linked to them show ⚠ vendor ledger
 const VENDOR_IDS = [
-  'vendor_001', 'vendor_002', 'vendor_003', 'vendor_004', // synced
-  'vendor_009', 'vendor_010', 'vendor_011', 'vendor_012', // categorise
-  'vendor_005', 'vendor_006', 'vendor_007', 'vendor_008', // synced
-  'vendor_013', 'vendor_014', 'vendor_015', 'vendor_009', // categorise / wrap
-  'vendor_001', 'vendor_003', 'vendor_005', 'vendor_007', // synced
+  'vendor_001', 'vendor_002', 'vendor_003', 'vendor_004',
+  'vendor_009', 'vendor_010', 'vendor_011', 'vendor_012',
+  'vendor_005', 'vendor_006', 'vendor_007', 'vendor_008',
+  'vendor_013', 'vendor_014', 'vendor_015', 'vendor_009',
+  'vendor_001', 'vendor_003', 'vendor_005', 'vendor_007',
 ]
 
 const VENDORS = [
-  'Acme Supplies Pvt Ltd',   // high confidence → ready to sync
-  'Nova Technologies',        // medium confidence → needs review
-  'Omega Consulting',         // low confidence → needs review
-  'Sterling Supplies',        // medium confidence → needs review
+  'Acme Supplies Pvt Ltd',
+  'Nova Technologies',
+  'Omega Consulting',
+  'Sterling Supplies',
   'Alpha Resources',
   'Pinnacle Services',
   'Delta Logistics',
@@ -118,7 +109,6 @@ const VENDORS = [
   'Digital Solutions Inc',
 ]
 
-// 4 of each status
 const STATUSES: BillStatus[] = [
   'categorise', 'categorise', 'categorise', 'categorise',
   'excluded', 'excluded', 'excluded', 'excluded',
@@ -140,7 +130,6 @@ const TDS_LEDGERS = ['TDS Payable 194C', 'TDS Payable 194J', 'TDS Payable 194I']
 const COST_CENTERS = ['Operations', 'Engineering', 'Marketing', 'Finance']
 const INVOICE_TYPES = ['Regular', 'Import Goods', 'Export', 'SEZ']
 
-// Reusable item definitions
 const ITEM_POOL: BillItem[][] = [
   [{ itemId: 'item_001', itemName: 'Laptop', quantity: 1, price: 60000 }],
   [{ itemId: 'item_002', itemName: 'Office Chair', quantity: 4, price: 12000 }, { itemId: 'item_003', itemName: 'Desk', quantity: 2, price: 8000 }],
