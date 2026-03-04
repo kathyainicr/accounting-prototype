@@ -11,6 +11,8 @@ import {
   TableRow,
   TableCell,
   TablePagination,
+  TableToolbar,
+  TableToolbarActions,
   QuickFilterGroup,
   QuickFilter,
   Badge,
@@ -34,6 +36,7 @@ const VendorPage = () => {
     pendingVendorLedgers,
     setPendingVendorLedger,
     pendingVendorSyncs,
+    addPendingVendorSync,
   } = useAccountingContext()
 
   const toast = useToast()
@@ -61,6 +64,18 @@ const VendorPage = () => {
   const categoriseVendors = vendorsWithRuntimeStatus.filter(
     (v) => v.status === 'categorise' && v.aiSuggestedLedger,
   )
+
+  const handleBulkSync = () => {
+    vendorsWithRuntimeStatus.forEach((vendor) => {
+      if (pendingVendorLedgers[vendor.id]) {
+        addPendingVendorSync(vendor.id)
+      }
+    })
+  }
+
+  const handleSaveAndSyncFromRow = (vendor: Vendor) => {
+    addPendingVendorSync(vendor.id)
+  }
 
   const handleAutoCategoriSe = async () => {
     if (isRunning) return
@@ -124,7 +139,17 @@ const VendorPage = () => {
         <Table
           data={tableData}
           marginTop="spacing.5"
-          gridTemplateColumns="2fr 1fr 1fr 1fr 2fr 1fr"
+          toolbar={
+            <TableToolbar title={`${filteredVendors.length} Vendors`}>
+              <TableToolbarActions>
+                <Box flexShrink={0}>
+                  <Button variant="primary" onClick={handleBulkSync}>
+                    Sync to Tally
+                  </Button>
+                </Box>
+              </TableToolbarActions>
+            </TableToolbar>
+          }
           pagination={<TablePagination defaultPageSize={25} showPageSizePicker />}
         >
           {(tableData) => (
@@ -156,11 +181,37 @@ const VendorPage = () => {
 
                   const ledgerValue = pendingLedger
 
+                  const canSaveAndSync = !isSynced && !isPending && !!pendingLedger
+
                   return (
                     <TableRow
                       key={vendor.id}
                       item={vendor}
                       onClick={({ item }) => setSelectedVendor(item)}
+                      hoverActions={
+                        <Box display="flex" gap="spacing.2">
+                          {!selectedVendor && (
+                            <>
+                              <Button
+                                variant="secondary"
+                                size="small"
+                                onClick={(e) => { e.stopPropagation(); setSelectedVendor(vendor) }}
+                              >
+                                View details
+                              </Button>
+                              {canSaveAndSync && (
+                                <Button
+                                  variant="primary"
+                                  size="small"
+                                  onClick={(e) => { e.stopPropagation(); handleSaveAndSyncFromRow(vendor) }}
+                                >
+                                  Save and sync
+                                </Button>
+                              )}
+                            </>
+                          )}
+                        </Box>
+                      }
                     >
                       <TableCell>
                         <Text size="medium" weight="semibold" color="surface.text.gray.normal">

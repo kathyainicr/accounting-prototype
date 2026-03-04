@@ -12,6 +12,8 @@ import {
   TableRow,
   TableCell,
   TablePagination,
+  TableToolbar,
+  TableToolbarActions,
   QuickFilterGroup,
   QuickFilter,
   Badge,
@@ -40,9 +42,11 @@ const ItemsPage = () => {
 
   const {
     itemCategories,
+    setItemCategory,
     pendingItemPurchaseLedgers,
     setPendingItemPurchaseLedger,
     pendingItemSyncs,
+    addPendingItemSync,
   } = useAccountingContext()
 
   const toast = useToast()
@@ -72,6 +76,23 @@ const ItemsPage = () => {
       : itemsWithStatus.filter((i) => i.status === activeFilter)
 
   const tableData: TableData<Item> = { nodes: displayedItems }
+
+  const handleBulkSync = () => {
+    itemsWithStatus.forEach((item) => {
+      const purchaseLedger = pendingItemPurchaseLedgers[item.id]
+      if (purchaseLedger) {
+        setItemCategory(item.id, { purchaseLedger, trackInventory: false })
+        addPendingItemSync(item.id)
+      }
+    })
+  }
+
+  const handleSaveAndSyncFromRow = (item: Item) => {
+    const purchaseLedger = pendingItemPurchaseLedgers[item.id]
+    if (!purchaseLedger) return
+    setItemCategory(item.id, { purchaseLedger, trackInventory: false })
+    addPendingItemSync(item.id)
+  }
 
   const handleAutoCategoriSe = async () => {
     if (isRunning) return
@@ -154,7 +175,17 @@ const ItemsPage = () => {
         <Table
           data={tableData}
           marginTop={filteredItemId ? 'spacing.0' : 'spacing.5'}
-          gridTemplateColumns="2fr 1.2fr 1fr 2fr 1fr"
+          toolbar={!filteredItemId ? (
+            <TableToolbar title={`${displayedItems.length} Items`}>
+              <TableToolbarActions>
+                <Box flexShrink={0}>
+                  <Button variant="primary" onClick={handleBulkSync}>
+                    Sync to Tally
+                  </Button>
+                </Box>
+              </TableToolbarActions>
+            </TableToolbar>
+          ) : undefined}
           pagination={!filteredItemId ? <TablePagination defaultPageSize={25} showPageSizePicker /> : undefined}
         >
           {(tableData) => (
@@ -185,11 +216,37 @@ const ItemsPage = () => {
 
                   const ledgerValue = pendingLedger
 
+                  const canSaveAndSync = !isSynced && !isPending && !!pendingLedger
+
                   return (
                     <TableRow
                       key={item.id}
                       item={item}
                       onClick={({ item }) => setSelectedItem(item)}
+                      hoverActions={
+                        <Box display="flex" gap="spacing.2">
+                          {!selectedItem && (
+                            <>
+                              <Button
+                                variant="secondary"
+                                size="small"
+                                onClick={(e) => { e.stopPropagation(); setSelectedItem(item) }}
+                              >
+                                View details
+                              </Button>
+                              {canSaveAndSync && (
+                                <Button
+                                  variant="primary"
+                                  size="small"
+                                  onClick={(e) => { e.stopPropagation(); handleSaveAndSyncFromRow(item) }}
+                                >
+                                  Save and sync
+                                </Button>
+                              )}
+                            </>
+                          )}
+                        </Box>
+                      }
                     >
                       <TableCell>
                         <Text size="medium" weight="semibold" color="surface.text.gray.normal">
