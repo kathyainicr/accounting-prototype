@@ -14,7 +14,7 @@ import ItemsPage from './pages/Accounting/Items/ItemsPage'
 import MappingPage from './pages/Mapping/MappingPage'
 
 const App = () => {
-  const [colorScheme, setColorScheme] = useState<'light' | 'dark'>('dark')
+  const [colorScheme, setColorScheme] = useState<'light' | 'dark'>('light')
 
   return (
     <ThemeContext.Provider value={{ colorScheme, setColorScheme }}>

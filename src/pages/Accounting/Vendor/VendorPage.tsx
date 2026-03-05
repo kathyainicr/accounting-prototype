@@ -26,7 +26,7 @@ import type { Vendor, VendorStatus } from './vendorMockData'
 import { LedgerDropdown } from '../../../components/LedgerDropdown'
 import { useAccountingContext } from '../../../context/AccountingContext'
 import { VendorDetailDrawer } from './VendorDetailDrawer'
-import { AiBanner } from '../shared/AiBanner'
+import { AiBanner } from '../shared/components/AiBanner'
 
 type FilterId = 'all' | VendorStatus
 
@@ -110,7 +110,7 @@ const VendorPage = () => {
         description={`${categoriseVendors.length} vendors pending ledger mapping — Ray AI will auto-fill suggestions. Review or edit any time.`}
       >
         <Button
-          variant="secondary"
+          variant="primary"
           color="white"
           size="medium"
           isLoading={isRunning}
@@ -174,7 +174,7 @@ const VendorPage = () => {
                   const pendingLedger = pendingVendorLedgers[vendor.id] ?? ''
 
                   const ledgerVariant = (() => {
-                    if (pendingLedger && pendingLedger === vendor.aiSuggestedLedger) return 'ai-approved'
+                    if (pendingLedger && pendingLedger === vendor.aiSuggestedLedger) return 'ai'
                     if (pendingLedger) return 'manual'
                     return 'empty'
                   })()

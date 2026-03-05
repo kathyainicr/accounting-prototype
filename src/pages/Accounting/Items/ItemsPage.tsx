@@ -30,7 +30,7 @@ import type { Item, ItemStatus } from './itemsMockData'
 import { useAccountingContext } from '../../../context/AccountingContext'
 import { LedgerDropdown } from '../../../components/LedgerDropdown'
 import { ItemDetailDrawer } from './ItemDetailDrawer'
-import { AiBanner } from '../shared/AiBanner'
+import { AiBanner } from '../shared/components/AiBanner'
 
 type FilterId = 'all' | ItemStatus
 
@@ -209,7 +209,7 @@ const ItemsPage = () => {
                   const pendingLedger = pendingItemPurchaseLedgers[item.id] ?? ''
 
                   const ledgerVariant = (() => {
-                    if (pendingLedger && pendingLedger === item.aiSuggestedPurchaseLedger) return 'ai-approved'
+                    if (pendingLedger && pendingLedger === item.aiSuggestedPurchaseLedger) return 'ai'
                     if (pendingLedger) return 'manual'
                     return 'empty'
                   })()
