@@ -174,7 +174,6 @@ const ItemsPage = () => {
 
         <Table
           data={tableData}
-          marginTop={filteredItemId ? 'spacing.0' : 'spacing.5'}
           toolbar={!filteredItemId ? (
             <TableToolbar title={`${displayedItems.length} Items`}>
               <TableToolbarActions>

@@ -138,7 +138,6 @@ const VendorPage = () => {
 
         <Table
           data={tableData}
-          marginTop="spacing.5"
           toolbar={
             <TableToolbar title={`${filteredVendors.length} Vendors`}>
               <TableToolbarActions>
