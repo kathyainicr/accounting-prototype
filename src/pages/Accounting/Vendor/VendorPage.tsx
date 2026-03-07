@@ -110,7 +110,7 @@ const VendorPage = () => {
         description={`${categoriseVendors.length} vendors pending ledger mapping — Ray AI will auto-fill suggestions. Review or edit any time.`}
       >
         <Button
-          variant="primary"
+          variant="secondary"
           color="white"
           size="medium"
           isLoading={isRunning}

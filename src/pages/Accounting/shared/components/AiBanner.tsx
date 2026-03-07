@@ -44,11 +44,11 @@ export const AiBanner = ({ heading, description, children }: Props) => {
     <BannerWrapper $isDark={isDark}>
       <Box display="flex" alignItems="top" gap="spacing.4" flex="1">
         <Box paddingTop="spacing.1">
-          <RayIcon size="large" color="feedback.icon.positive.intense" />
+          <RayIcon size="large" color="feedback.icon.positive.subtle" />
         </Box>
         <Box>
           <GradientHeading $isDark={isDark}>{heading}</GradientHeading>
-          <Text size="small" color="surface.text.staticWhite.muted">{description}</Text>
+          <Text size="small" color="surface.text.staticWhite.subtle">{description}</Text>
         </Box>
       </Box>
       {children}
