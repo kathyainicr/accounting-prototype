@@ -71,26 +71,28 @@ export const PageHeader = () => {
           />
 
           <MenuOverlay minWidth="220px">
-            <Box
-              display="flex"
-              justifyContent="space-between"
-              alignItems="center"
-              paddingX="spacing.4"
-              paddingY="spacing.3"
-            >
-              <Box display="flex" alignItems="center" gap="spacing.3">
-                <SunIcon size="small" color="surface.icon.gray.normal" />
-                <Text size="medium" color="surface.text.gray.normal">
-                  Light Theme
-                </Text>
+            <div onClick={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()}>
+              <Box
+                display="flex"
+                justifyContent="space-between"
+                alignItems="center"
+                paddingX="spacing.4"
+                paddingY="spacing.3"
+              >
+                <Box display="flex" alignItems="center" gap="spacing.3">
+                  <SunIcon size="small" color="surface.icon.gray.normal" />
+                  <Text size="medium" color="surface.text.gray.normal">
+                    Light Theme
+                  </Text>
+                </Box>
+                <Switch
+                  accessibilityLabel="Toggle light theme"
+                  isChecked={isLightTheme}
+                  onChange={({ isChecked }) => setColorScheme(isChecked ? 'light' : 'dark')}
+                  size="small"
+                />
               </Box>
-              <Switch
-                accessibilityLabel="Toggle light theme"
-                isChecked={isLightTheme}
-                onChange={({ isChecked }) => setColorScheme(isChecked ? 'light' : 'dark')}
-                size="small"
-              />
-            </Box>
+            </div>
 
             <MenuDivider />
 

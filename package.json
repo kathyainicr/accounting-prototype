@@ -10,7 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@razorpay/blade": "12.82.0",
+    "@razorpay/blade": "12.95.0",
     "@razorpay/i18nify-js": "^1.12.8",
     "@razorpay/i18nify-react": "^4.0.12",
     "framer-motion": "^12.34.3",

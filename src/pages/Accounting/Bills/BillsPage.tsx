@@ -21,30 +21,32 @@ import {
 import type { TableData } from '@razorpay/blade/components'
 import { MOCK_BILLS, STATUS_CONFIG } from './billsMockData'
 import type { Bill } from './billsMockData'
-import { FAF_GRAND_TOTAL, FAF_DAYS_LEFT, FAF_COUNTS_FRESH } from './aiMockData'
+// TODO: Re-enable with AccountingStatsCard: import { FAF_GRAND_TOTAL, FAF_DAYS_LEFT, FAF_COUNTS_FRESH } from './aiMockData'
 import { BillDetailDrawer } from './BillDetailDrawer'
 import { CategorizeBillModal } from './CategorizeBillPage'
-import {
-  AccountingStatsCard,
-  AccountingAiPanel,
-} from '../shared/components/AccountingStatsCard'
+// TODO: Re-enable AccountingStatsCard + AccountingAiPanel when surfacing the overview stats again
+// import {
+//   AccountingStatsCard,
+//   AccountingAiPanel,
+// } from '../shared/components/AccountingStatsCard'
 
-type IndicatorColor = 'positive' | 'information' | 'notice' | 'primary' | 'negative' | 'neutral'
+// TODO: Re-enable with AccountingStatsCard
+// type IndicatorColor = 'positive' | 'information' | 'notice' | 'primary' | 'negative' | 'neutral'
+// type Segment = {
+//   key: keyof typeof FAF_COUNTS_FRESH
+//   label: string
+//   barColor: string
+//   indicatorColor: IndicatorColor
+// }
 
-type Segment = {
-  key: keyof typeof FAF_COUNTS_FRESH
-  label: string
-  barColor: string
-  indicatorColor: IndicatorColor
-}
-
-const SEGMENTS: Segment[] = [
-  { key: 'synced',      label: 'Synced',        barColor: 'rgba(206,213,222,0.18)', indicatorColor: 'neutral' },
-  { key: 'readyToSync', label: 'Ready to sync', barColor: '#008743',               indicatorColor: 'positive' },
-  { key: 'needsAction', label: 'Categorise',    barColor: '#e9690c',               indicatorColor: 'primary' },
-  { key: 'excluded',    label: 'Excluded',      barColor: '#8d9bb0',               indicatorColor: 'neutral' },
-  { key: 'issues',      label: 'Error found',   barColor: '#b42318',               indicatorColor: 'negative' },
-]
+// TODO: Re-enable with AccountingStatsCard
+// const SEGMENTS: Segment[] = [
+//   { key: 'synced',      label: 'Synced',        barColor: 'rgba(206,213,222,0.18)', indicatorColor: 'neutral' },
+//   { key: 'readyToSync', label: 'Ready to sync', barColor: '#008743',               indicatorColor: 'positive' },
+//   { key: 'needsAction', label: 'Categorise',    barColor: '#e9690c',               indicatorColor: 'primary' },
+//   { key: 'excluded',    label: 'Excluded',      barColor: '#8d9bb0',               indicatorColor: 'neutral' },
+//   { key: 'issues',      label: 'Error found',   barColor: '#b42318',               indicatorColor: 'negative' },
+// ]
 
 const NEEDS_ACTION_BILLS = MOCK_BILLS.filter(b => b.status === 'categorise')
 const SYNCED_BILLS       = MOCK_BILLS.filter(b => b.status === 'synced')
@@ -124,8 +126,9 @@ const BillsPage = () => {
   const [selectedBill, setSelectedBill] = useState<Bill | null>(null)
   const [categorizeBill, setCategorizeBill] = useState<Bill | null>(null)
 
-  const counts = FAF_COUNTS_FRESH
-  const pctSynced = Math.round((counts.synced / FAF_GRAND_TOTAL) * 100)
+  // TODO: Re-enable with AccountingStatsCard
+  // const counts = FAF_COUNTS_FRESH
+  // const pctSynced = Math.round((counts.synced / FAF_GRAND_TOTAL) * 100)
 
   const ftuxFilteredBills = ftuxFilter === 'all'
     ? MOCK_BILLS
@@ -141,6 +144,7 @@ const BillsPage = () => {
   return (
     <Box display="flex" flexDirection="column" gap="spacing.6">
 
+      {/* TODO: Re-enable when surfacing overview stats + AI panel again
       <AccountingStatsCard
         daysLeft={FAF_DAYS_LEFT}
         totalLabel="Total Transactions"
@@ -160,6 +164,7 @@ const BillsPage = () => {
           buttonLabel="Run Auto Categorise"
         />
       </AccountingStatsCard>
+      */}
 
       <ListView>
         <ListViewFilters
