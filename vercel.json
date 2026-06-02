@@ -1,3 +1,4 @@
 {
+  "installCommand": "npm ci --ignore-scripts=false",
   "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
 }
