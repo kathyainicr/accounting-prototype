@@ -124,3 +124,41 @@
 - [ ] Wire up remaining sidebar routes (Payouts, Account Statement, Contacts, etc.)
 - [ ] Mobile responsiveness testing
 - [ ] Real API/data layer
+
+---
+
+## Iteration 3 — Accounting Review Workspace (V3) 🚧
+
+### Navigation and routing
+- [x] Add `Flow 3` to FlowSwitcher and make it the default accounting prototype
+- [x] Add `/v3/accounting/*` route family
+- [x] Switch Accounting L2 nav to V3 structure
+- [x] Add inline `Rules` divider label and `More` nested children (Cost Centers / GST / TDS)
+
+### Theme and shell
+- [x] Return app to dark theme by default
+- [x] Keep RazorpayX shell and layer V3 inside DashboardLayout
+
+### Accounting overview
+- [x] Build overview dashboard with close progress, Ray review queue, sync readiness, and recent sync activity
+- [x] Add global sync CTA with animated operational feedback
+
+### Review pages
+- [x] Build shared review page pattern for Items, Vendors, Bills, Expenses, Advances, Cost Centers, GST, and TDS
+- [x] Add Ray banner, tabs with counts, exception-first list view, inline mapping edits, and page-level sync
+- [x] Add on-demand Ray explanation modal
+- [x] Remove duplicate filter row so only underline tabs remain on review pages
+- [x] Swap text mapping badges for icon-based states and tooltip explanations
+- [x] Lock synced ledger mappings from further edits
+- [x] Add Bills guidance to review Items and Vendors first
+- [x] Combine Bills AI summary with unmapped vendor/item blockers to nudge upstream review
+- [x] Add real list-view filters in `ListViewFilters` (search, field filters, amount range, date range where relevant)
+- [x] Add tab-aware bulk actions for needs-review and ready-for-sync tables
+
+### Mock data and state
+- [x] Add V3 accounting review context for per-module row state and sync actions
+- [x] Seed operational mock data for all V3 modules
+
+### Follow-ups
+- [ ] Tune column widths and content density after visual review
+- [ ] Add stronger module-specific detail surfaces if the concept needs deeper drill-down

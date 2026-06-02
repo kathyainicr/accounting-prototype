@@ -16,10 +16,12 @@ import {
 } from '@razorpay/blade/components'
 
 export type L2NavItem = {
+  type?: 'link' | 'divider'
   title: string
-  href: string
+  href?: string
   badgeCount?: number
   badgeMax?: number
+  children?: L2NavItem[]
 }
 
 export type L1NavItem = {
@@ -100,11 +102,37 @@ export const NAV_SECTIONS: NavSection[] = [
         href: '/accounting',
         icon: BookIcon,
         children: [
-          { title: 'Bills', href: '/v1/accounting/bills', badgeCount: 99, badgeMax: 99 },
-          { title: 'Vendor', href: '/v1/accounting/vendor', badgeCount: 99, badgeMax: 99 },
-          { title: 'Items', href: '/v1/accounting/items', badgeCount: 57, badgeMax: 99 },
-          { title: 'Advances', href: '/accounting/advances', badgeCount: 2, badgeMax: 99 },
-          { title: 'Settings', href: '/accounting/settings' },
+          { title: 'Overview', href: '/v3/accounting/overview' },
+          { title: 'Bills', href: '/v3/accounting/bills', badgeCount: 14, badgeMax: 99 },
+          { title: 'Expenses', href: '/v3/accounting/expenses', badgeCount: 9, badgeMax: 99 },
+          { title: 'Advances', href: '/v3/accounting/advances', badgeCount: 6, badgeMax: 99 },
+          { type: 'divider', title: 'Rules' },
+          { title: 'Items', href: '/v3/accounting/items', badgeCount: 11, badgeMax: 99 },
+          { title: 'Vendors', href: '/v3/accounting/vendors', badgeCount: 8, badgeMax: 99 },
+          {
+            title: 'More',
+            href: '/v3/accounting/more/gst',
+            children: [
+              { title: 'Cost Centers', href: '/v3/accounting/more/cost-centers' },
+              { title: 'GST', href: '/v3/accounting/more/gst' },
+              { title: 'TDS', href: '/v3/accounting/more/tds' },
+            ],
+          },
+        ],
+      },
+      {
+        title: 'Accounting',
+        href: '/v4/accounting',
+        icon: BookIcon,
+        children: [
+          { title: 'Overview', href: '/v4/accounting/overview' },
+          { title: 'Bills', href: '/v4/accounting/bills', badgeCount: 14, badgeMax: 99 },
+          { title: 'Expenses', href: '/v4/accounting/expenses', badgeCount: 9, badgeMax: 99 },
+          { title: 'Advances', href: '/v4/accounting/advances', badgeCount: 6, badgeMax: 99 },
+          { type: 'divider', title: 'Configure' },
+          { title: 'Mappings', href: '/v4/accounting/mappings' },
+          { title: 'Smart Rules', href: '/v4/accounting/rules' },
+          { title: 'Settings', href: '/v4/accounting/settings' },
         ],
       },
       {

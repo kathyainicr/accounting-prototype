@@ -11,6 +11,20 @@ type Flow = {
 
 const FLOWS: Flow[] = [
   {
+    id: 'flow-4',
+    label: 'Flow 4',
+    description: 'AI-First Accounting',
+    route: '/v4/accounting/overview',
+    disabled: false,
+  },
+  {
+    id: 'flow-3',
+    label: 'Flow 3',
+    description: 'Accounting Review Workspace',
+    route: '/v3/accounting/overview',
+    disabled: false,
+  },
+  {
     id: 'flow-1',
     label: 'Flow 1',
     description: 'Bills AI Categorisation',

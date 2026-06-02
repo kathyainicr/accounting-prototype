@@ -10,9 +10,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@esbuild/darwin-arm64": "^0.28.0",
     "@razorpay/blade": "12.95.0",
     "@razorpay/i18nify-js": "^1.12.8",
     "@razorpay/i18nify-react": "^4.0.12",
+    "@rollup/rollup-darwin-arm64": "^4.60.3",
     "framer-motion": "^12.34.3",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",

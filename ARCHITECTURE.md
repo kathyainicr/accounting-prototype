@@ -12,6 +12,15 @@
 | `/accounting/bills/categorise/:billId` | CategorizeBillModal | Full-screen modal — opened via React state, not route navigation |
 | `/accounting/vendor` | VendorPage | Vendor list + detail drawer |
 | `/accounting/map` | MappingPage | **Flow 2** — Map with AI wizard (OUTSIDE DashboardLayout — own full-screen layout) |
+| `/v3/accounting/overview` | AccountingOverviewPage | **Flow 3** — Accounting review dashboard for Ray AI mapping approval |
+| `/v3/accounting/items` | AccountingModulePage | V3 review queue — Items |
+| `/v3/accounting/vendors` | AccountingModulePage | V3 review queue — Vendors |
+| `/v3/accounting/bills` | AccountingModulePage | V3 review queue — Bills |
+| `/v3/accounting/expenses` | AccountingModulePage | V3 review queue — Expenses / payouts |
+| `/v3/accounting/advances` | AccountingModulePage | V3 review queue — Vendor advances |
+| `/v3/accounting/more/cost-centers` | AccountingModulePage | V3 support page under More |
+| `/v3/accounting/more/gst` | AccountingModulePage | V3 GST ledger mapping page under More |
+| `/v3/accounting/more/tds` | AccountingModulePage | V3 TDS mapping page under More |
 | `*` | HomePage | Catch-all so deep links don't 404 |
 
 ---
@@ -29,9 +38,19 @@
 
 ### Context
 - `src/context/AccountingContext.tsx` — Shared state: `vendorLedgers` (Record<vendorId, ledgerName>) + `costCenters` (Record<billId, costCenter>) + `itemCategories` (Record<itemId, ItemCategory>)
+- `src/context/AccountingV3Context.tsx` — Flow 3 review state: per-module rows, approve/edit/exclude helpers, module/global sync actions, overview counters
 - `src/context/MappingContext.tsx` — **Flow 2** wizard state: per-step resolutions, stepMeta (hasSeen), activeStep, showFinalCompletion, `isWizardComplete` (derived)
 
 ### Pages
+
+#### Accounting V3 (`src/pages/AccountingV3/`)
+| File | Purpose |
+|------|---------|
+| `AccountingOverviewPage.tsx` | Operational dashboard for review progress, sync readiness, and Ray queue entry point |
+| `AccountingModulePage.tsx` | Shared review workspace used by Items, Vendors, Bills, Expenses, Advances, Cost Centers, GST, and TDS; underline tabs only, icon-based mapping state, synced rows are read-only, Bills includes upstream item/vendor blocker summary, tables support real field filters inside `ListViewFilters` and tab-aware bulk actions |
+| `SyncBooksModal.tsx` | Animated sync progress modal with operational step feedback |
+| `data.ts` | V3 module configs, route labels, options, and initial mock review rows |
+| `types.ts` | Flow 3 domain types |
 
 #### Bills (`src/pages/Accounting/Bills/`)
 | File | Purpose |
@@ -162,6 +181,8 @@ All items in step resolved →
 ## Key Structural Decisions
 
 - **Dark theme**: `colorScheme="dark"` in `BladeProvider` (src/main.tsx) — do not modify unless explicitly asked
+- **Flow 3 default**: Accounting nav routes point at `/v3/accounting/*`; FlowSwitcher opens Flow 3 by default for new accounting work
+- **Flow 3 review affordances**: Mapping state is conveyed with icons (Ray / edited / needs input), reasons are shown via info tooltip, and Bills nudges users to fix Items and Vendors first
 - **Routing**: react-router-dom v6/v7 — layout routes with `<Outlet />` pattern
 - **State**: Local state only — `useState`, `useContext`. No Redux.
 - **Styling**: Blade components + spacing tokens first; `styled-components` only where Blade has no equivalent (e.g. multi-colour segmented progress bar, hover fade animations)
