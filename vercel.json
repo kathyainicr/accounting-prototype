@@ -1,4 +1,6 @@
 {
-  "installCommand": "npm ci --ignore-scripts=false",
+  "buildCommand": "",
+  "outputDirectory": "dist",
+  "installCommand": "echo 'using pre-built dist'",
   "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
 }
